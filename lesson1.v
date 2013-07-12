@@ -188,62 +188,60 @@ match n with
 | S(nn) => plus m (mult nn m)
 end.
 
-Theorem mult_0_r : forall n : nat,
-  n * 0 = 0.
-Proof.
-intros n.
-induction n as [|nn].
-simpl. reflexivity.
-simpl. rewrite -> IHnn. reflexivity. 
-Qed.
-
+(* COMMUTATIVITY OF MULT *)
 Theorem mult_comm : forall m n : nat,
  m * n = n * m.
 Proof.
-intros m n.
-induction n as [| nn].
-simpl. rewrite -> mult_0_r. reflexivity. 
-simpl. rewrite <- IHnn.
-
-Theorem mult_m_Sn : forall n m,
-  m * S n = m * n + m.
-intros m n.
-induction n as [| nn].
-simpl. reflexivity. 
-simpl. rewrite -> IHnn. rewrite <- assoc_add. rewrite <- plus_n_Sm. reflexivity.
+  intros m n.
+  induction n as [| nn].
+  Theorem mult_0_r : forall n : nat,
+    n * 0 = 0.
+    Proof.
+      intros n.
+      induction n as [|nn].
+      simpl. reflexivity.
+      simpl. rewrite -> IHnn. reflexivity. 
+    Qed.
+  simpl. rewrite -> mult_0_r. reflexivity. 
+  simpl. rewrite <- IHnn.
+  Theorem mult_m_Sn : forall n m,
+    m * S n = m * n + m.
+    Proof.
+      intros foo bar.
+      induction bar as [| barf].
+      simpl. reflexivity. 
+      simpl. rewrite -> IHbarf. rewrite <- assoc_add. rewrite <- plus_n_Sm. reflexivity.
+    Qed.
+  Theorem add_comm_mult : forall n m p,
+    n + m * p = m * p + n.
+  Proof.
+    intros n m p.
+    induction n as [| nn].
+    simpl. rewrite -> plus_0_r. reflexivity. 
+    simpl. rewrite -> IHnn. rewrite -> plus_n_Sm. reflexivity. 
+  Qed.  
+  rewrite -> mult_m_Sn. rewrite -> add_comm_mult. reflexivity. 
 Qed.
-
-Theorem H1 : forall n m p,
-  n + m * p = m * p + n.
-Proof.
-intros n m p.
-induction n as [| nn].
-simpl. rewrite -> plus_0_r. reflexivity. 
-simpl. rewrite -> IHnn. rewrite -> plus_n_Sm. reflexivity. 
-Qed.  
-
-rewrite -> mult_m_Sn. rewrite -> H1. reflexivity. 
-Qed. 
 
 (* Exercise: 2 stars, optional (evenb_n__oddb_Sn) *)
 Theorem evenb_n__oddb_Sn :  forall n : nat,
   evenb n = negb (evenb (S n)).
 Proof.
-intros n.
-induction n as [|nn].
-simpl. reflexivity.   
+  intros n.
+  induction n as [|nn].
+  simpl. reflexivity.   
   Theorem times_two : forall b : nat,
     evenb b = evenb (S (S b)).
   Proof. intros b. simpl. reflexivity. Qed. 
-rewrite <- times_two. rewrite -> IHnn.   
+  rewrite <- times_two. rewrite -> IHnn.   
   Theorem neg_idem : forall b : bool,
     b = negb (negb b).
   Proof. 
-  intros b. destruct b. 
-  simpl. reflexivity. 
-  simpl. reflexivity. 
+    intros b. destruct b. 
+    simpl. reflexivity. 
+    simpl. reflexivity. 
   Qed. 
-rewrite <- neg_idem. reflexivity.
+  rewrite <- neg_idem. reflexivity.
 Qed. 
 
 (* Exercise: 3 stars, optional (more_exercises)
@@ -265,9 +263,9 @@ Fixpoint ble_nat (n : nat) (m : nat) : bool :=
 Theorem ble_nat_refl : forall n:nat,
   true = ble_nat n n.
 Proof.
-intros n. induction n as [|nn]. 
-simpl. reflexivity.
-simpl. rewrite <- IHnn. reflexivity. 
+  intros n. induction n as [|nn]. 
+  simpl. reflexivity.
+  simpl. rewrite <- IHnn. reflexivity. 
 Qed.
 
 Fixpoint beq_nat (n : nat) (m : nat) : bool :=
@@ -279,59 +277,203 @@ end.
 
 Theorem zero_nbeq_S :  forall n:nat,
   beq_nat 0 (S n) = false.
-Proof.
-intros n. simpl. reflexivity. Qed.
+Proof. intros n. simpl. reflexivity. Qed.
 
 Theorem andb_false_r : forall b : bool,
   andb b false = false.
 Proof.
-intros b. destruct b.
-simpl. reflexivity. 
-simpl. reflexivity.
+  intros b. destruct b.
+  simpl. reflexivity. 
+  simpl. reflexivity.
 Qed.
 
 Theorem plus_ble_compat_l :  forall n m p : nat,
   ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
 Proof.
-intros n m p. induction p as [| pp].
-simpl. induction n as [| nn]. 
- Theorem zero_ble_S : forall n : nat,
+  intros n m p. induction p as [| pp].
+  simpl. induction n as [| nn]. 
+  Theorem zero_ble_S : forall n : nat,
     ble_nat 0 n = true.
   Proof.
-  intros n. induction n as [| nn]. 
-  simpl. reflexivity. 
-  simpl. reflexivity. 
+    intros n. induction n as [| nn]. 
+    simpl. reflexivity. 
+    simpl. reflexivity. 
   Qed. 
-rewrite -> zero_ble_S. reflexivity. 
-   
+  rewrite -> zero_ble_S. reflexivity.
+  destruct (ble_nat (S nn) m). reflexivity. 
+  intro H. rewrite <- H. reflexivity. 
+  simpl. intro H. rewrite <- IHpp. 
+  reflexivity. rewrite -> H. reflexivity. 
+Qed. 
 
-Theorem S_nbeq_0 : ∀n:nat,
+Theorem S_nbeq_0 : forall n:nat,
   beq_nat (S n) 0 = false.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Proof. intros n. simpl. reflexivity. Qed.
 
-Theorem mult_1_l : ∀n:nat, 1 * n = n.
-Proof.
-  (* FILL IN HERE *) Admitted.
+Theorem mult_1_l : forall n:nat, 1 * n = n.
+Proof. intros n. simpl. rewrite -> plus_0_r. reflexivity. Qed.
 
-Theorem all3_spec : ∀b c : bool,
+Theorem all3_spec : forall b c : bool,
     orb
       (andb b c)
       (orb (negb b)
                (negb c))
   = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+ intros b c. destruct b. destruct c. 
+ simpl. reflexivity. 
+ simpl. reflexivity. 
+ simpl. reflexivity. 
+Qed.
 
-Theorem mult_plus_distr_r : ∀n m p : nat,
+Theorem mult_plus_distr_r : forall n m p : nat,
   (n + m) * p = (n * p) + (m * p).
 Proof.
-  (* FILL IN HERE *) Admitted.
+ intros n m p. induction n as [|nn].
+ simpl. reflexivity. 
+ simpl. rewrite -> add_comm_mult. rewrite -> IHnn. 
+ rewrite <- plus_comm. rewrite -> assoc_add.
+ reflexivity. 
+Qed. 
 
-Theorem mult_assoc : ∀n m p : nat,
+Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* FILL IN HERE *) Admitted.
+ intros n m p. induction n as [| nn]. 
+ simpl. reflexivity.
+ simpl. rewrite -> mult_plus_distr_r. rewrite -> IHnn. reflexivity. 
+Qed. 
+
+(* Exercise: 2 stars, optional (plus_swap')
+The replace tactic allows you to specify a particular subterm to rewrite and what you 
+want it rewritten to. More precisely, replace (t) with (u) replaces (all copies of) 
+expression t in the goal by expression u, and generates t = u as an additional subgoal. 
+This is often useful when a plain rewrite acts on the wrong part of the goal.
+Use the replace tactic to do a proof of plus_swap', just like plus_swap but without 
+needing assert (n + m = m + n). *)
+
+Theorem plus_swap' : forall n m p : nat,
+  n + (m + p) = m + (n + p).
+Proof.
+ intros n m p. rewrite <- plus_comm. replace (n + p) with (p + n). rewrite <- assoc_add. reflexivity. 
+ rewrite -> plus_comm. reflexivity. 
+Qed. 
+
+(* Exercise: 3 stars, optional *)
+Require String. Open Scope string_scope.
+
+Ltac move_to_top x :=
+  match reverse goal with
+  | H : _ |- _ => try move x after H
+  end.
+
+Tactic Notation "assert_eq" ident(x) constr(v) :=
+  let H := fresh in
+  assert (x = v) as H by reflexivity;
+  clear H.
+
+Tactic Notation "Case_aux" ident(x) constr(name) :=
+  first [
+    set (x := name); move_to_top x
+  | assert_eq x name; move_to_top x
+  | fail 1 "because we are working on a different case" ].
+
+Tactic Notation "Case" constr(name) := Case_aux Case name.
+Tactic Notation "SCase" constr(name) := Case_aux SCase name.
+Tactic Notation "SSCase" constr(name) := Case_aux SSCase name.
+Tactic Notation "SSSCase" constr(name) := Case_aux SSSCase name.
+Tactic Notation "SSSSCase" constr(name) := Case_aux SSSSCase name.
+Tactic Notation "SSSSSCase" constr(name) := Case_aux SSSSSCase name.
+Tactic Notation "SSSSSSCase" constr(name) := Case_aux SSSSSSCase name.
+Tactic Notation "SSSSSSSCase" constr(name) := Case_aux SSSSSSSCase name.
+Theorem bool_fn_applied_thrice :
+ forall (f : bool -> bool) (b : bool),
+  f (f (f b)) = f b.
+Proof. 
+ intros f b. 
+ destruct b. 
+ Case "b = true".
+ remember (f true) as ftrue.
+  destruct ftrue. 
+  SCase "f true = true".
+   rewrite <- Heqftrue. 
+   symmetry. 
+   apply Heqftrue.
+  SCase "f true = false".
+   remember (f false) as ffalse.
+   destruct ffalse. 
+   SSCase "f false = true". 
+    symmetry. 
+    apply Heqftrue. 
+   SSCase "f false = false".
+    symmetry. 
+    apply Heqffalse. 
+ remember (f false) as ffalse. 
+  destruct ffalse. 
+  SCase "f false = true".
+   remember (f true) as ftrue. 
+   destruct ftrue.
+    SSCase "f true = true".
+     symmetry. 
+     apply Heqftrue. 
+    SSCase "f true = false". 
+     symmetry. 
+     apply Heqffalse.
+  SCase "f false = false".
+   rewrite <- Heqffalse. 
+   symmetry. 
+   apply Heqffalse. 
+Qed.
+
+(* Exercise: 4 stars, recommended (binary)
+Consider a different, more efficient representation of natural numbers using a binary 
+rather than unary system. That is, instead of saying that each natural number is either 
+zero or the successor of a natural number, we can say that each binary number is either
+
+    zero,
+    twice a binary number, or
+    one more than twice a binary number.
+
+(a) First, write an inductive definition of the type bin corresponding to this 
+description of binary numbers.
+(Hint: recall that the definition of nat from class,
+    Inductive nat : Type :=
+      | O : nat
+      | S : nat → nat.
+says nothing about what O and S "mean". It just says "O is a nat (whatever that is), 
+and if n is a nat then so is S n". The interpretation of O as zero and S as 
+successor/plus one comes from the way that we use nat values, by writing functions to 
+do things with them, proving things about them, and so on. Your definition of bin should 
+be correspondingly simple; it is the functions you will write next that will give it 
+mathematical meaning.) *)
+
+Inductive bin : Type :=
+| P : bin
+| Q : bin -> bin
+| R : bin.
+
+(* (b) Next, write an increment function for binary numbers, and a function to convert 
+binary numbers to unary numbers. *)
+
+Fixpoint inc (n : bin) :=
+match n with 
+| P => R (* 0 -> 1 *)
+| R => Q P (* 1 -> 2*1+0 *)
+| Q(P) => Q(R) (* 2 -> 2*1 + 1 *)
+| Q(R) => Q (Q P) (* 3 -> 4 *)
+| Q(nn) => Q (inc nn)
+end. 
+
+Eval simpl in (inc (Q (Q (Q P)))). (* 8 -> 9 *)
+Eval simpl in (inc (inc (Q (Q (Q R))))). (* 9 -> 11 *)
+
+
+(c) Finally, prove that your increment and binary-to-unary functions commute: that is, incrementing a binary number and then converting it to unary yields the same result as first converting it to unary and then incrementing.
+
+(* FILL IN HERE *)  
+  
+
+
 (* Exercise: 2 stars, optional (decreasing) 
 The requirement that some argument to each function be "decreasing" is a 
 fundamental feature of Coq's design: In particular, it guarantees that every 
