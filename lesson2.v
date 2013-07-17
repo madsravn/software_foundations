@@ -336,10 +336,23 @@ Theorem app_nil_end : forall l : natlist,
 Proof. intros l. induction l as [| n ll]. reflexivity. 
 simpl. rewrite -> IHll. reflexivity. Qed.  
   
+Theorem cibele : forall (l : natlist) (n : nat),
+ rev(snoc l n) = n :: (rev l).
+Proof.
+ intros l n.  
+ induction l as [| h t].
+ simpl. reflexivity. 
+ simpl. rewrite -> IHt. simpl. reflexivity. 
+Qed. 
 
 Theorem rev_involutive :  forall l : natlist,
   rev (rev l) = l.
-Proof.  Admitted.
+Proof.
+ intro l.
+ induction l as [| h t].
+ reflexivity. 
+ simpl. rewrite -> cibele. rewrite -> IHt. reflexivity. 
+Qed. 
 
 (* There is a short solution to the next exercise. 
 If you find yourself getting tangled up, step back and try to look for a simpler way. *)
@@ -355,7 +368,8 @@ Proof.
     induction l1 as [|h1 t1]. reflexivity. 
     simpl. rewrite -> IHt1. reflexivity.
   Qed. 
-  rewrite <- app_right. rewrite app_right. reflexivity.  
+  rewrite <- app_right. rewrite app_right. reflexivity.
+Qed.   
 
 
 Theorem snoc_append : forall (l:natlist) (n:nat),
@@ -368,13 +382,158 @@ Qed.
 Theorem distr_rev : forall l1 l2 : natlist,
   rev (l1 ++ l2) = (rev l2) ++ (rev l1).
 Proof. 
-  intros l1 l2. 
-Admitted. 
+  intros l1 l2.
+  induction l1 as [| h1 t1].
+  simpl. rewrite -> app_nil_end. reflexivity. 
+  simpl. rewrite -> snoc_append. rewrite -> IHt1. rewrite -> snoc_append. rewrite -> app_right. reflexivity. 
+Qed. 
+  
 
 (* An exercise about your implementation of nonzeros: *)
 
 Lemma nonzeros_length : forall l1 l2 : natlist,
   nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
 Proof.
-  intros l1 l2. 
-Admitted.
+  intros l1 l2.
+Admitted.   
+(* OPTIONS *)
+ 
+Inductive natoption : Type :=
+| Some : nat -> natoption
+| None : natoption.
+
+Fixpoint beq_nat (n : nat) (m : nat) : bool :=
+match (n, m) with
+| (O, O) => true
+| (_, O) | (O, _) => false
+| (S nn, S mm) => beq_nat nn mm
+end.
+
+Fixpoint index (n : nat) (l : natlist) : natoption :=
+match l with
+| nil => None
+| a :: ll => match beq_nat n 0 with
+	     | true => Some a
+	     | false => index (pred n) ll
+	     end
+end.
+
+Example test_index1 : index 0 [4,5,6,7] = Some 4.
+Proof. reflexivity. Qed.
+Example test_index2 : index 3 [4,5,6,7] = Some 7.
+Proof. simpl. reflexivity. Qed. 
+Example test_index3 : index 10 [4,5,6,7] = None.
+Proof. reflexivity. Qed. 
+
+Fixpoint index' (n : nat) (l : natlist) : natoption :=
+match l with
+| nil => None
+| a::ll => if beq_nat n 0
+           then Some a
+           else index' (pred n) ll
+end.
+
+Definition option_elim (d : nat) (o : natoption) : nat :=
+match o with
+| Some nn => nn
+| None => d
+end.
+
+Definition hd_opt (l : natlist) : natoption :=
+match l with
+| nil => None
+| h::t => Some h
+end.
+
+Example test_hd_opt1 : hd_opt [] = None.
+Proof. reflexivity. Qed.
+Example test_hd_opt2 : hd_opt [1] = Some 1.
+Proof. reflexivity. Qed.
+Example test_hd_opt3 : hd_opt [5,6] = Some 5.
+Proof. reflexivity. Qed.
+
+Theorem option_elim_hd : forall (l : natlist) (default : nat),
+hd default l = option_elim default (hd_opt l).
+Proof. 
+  intros l n.
+  destruct l as [| h t].
+  reflexivity.
+  reflexivity.
+Qed.
+
+Inductive nopt_pair : Type :=
+| Nop : natoption -> natoption -> nopt_pair.
+
+Fixpoint beq_natlist (l1 l2 : natlist) : bool :=
+match l1 with
+| nil => match l2 with
+         | nil => true
+         | _ => false
+         end
+| h1::t1 => match l2 with
+            | nil => false
+            | h2::t2 => if beq_nat h1 h2 
+                        then beq_natlist t1 t2
+                        else false
+            end
+end.
+Example test_beq_natlist1 : (beq_natlist nil nil = true).
+Proof. reflexivity. Qed.
+Example test_beq_natlist2 : beq_natlist [1,2,3] [1,2,3] = true.
+Proof. reflexivity. Qed.
+Example test_beq_natlist3 : beq_natlist [1,2,3] [1,2,4] = false.
+Proof. reflexivity. Qed.
+
+Theorem beq_natlist_refl : forall l : natlist,
+true = beq_natlist l l.
+Proof. 
+ intro l. induction l as [| h t].
+ simpl. reflexivity. 
+ simpl. rewrite <- IHt. assert (H : beq_nat h h = true).
+ induction h as [| hh]. 
+ simpl. reflexivity. 
+ simpl. rewrite -> IHhh. 
+ reflexivity. 
+ rewrite -> H. 
+ reflexivity. 
+Qed.
+
+Module Dictionary.
+
+Inductive dictionary : Type :=
+| empty : dictionary
+| record : nat -> nat -> dictionary -> dictionary. 
+
+Definition insert (key value : nat) (d : dictionary) :=
+ (record key value d).
+
+Fixpoint find (key : nat) (d : dictionary) : natoption :=
+ match d with
+ | empty => None
+ | record k v d' => if (beq_nat key k)
+                    then (Some v) 
+                    else (find key d')
+ end.
+
+Theorem dictionary_invariant1 : forall (d : dictionary) (k v : nat),
+  (find k (insert k v d)) = Some v.
+Proof. 
+ intros d k v. 
+ simpl. assert (H : beq_nat k k = true).  
+  induction k as [| kk]. 
+  reflexivity. 
+  simpl. rewrite -> IHkk. reflexivity. 
+  rewrite -> H. reflexivity. 
+Qed. 
+
+Theorem dictionary_invariant2 : forall (d : dictionary) (m n o : nat),
+(beq_nat m n) = false -> (find m d) = (find m (insert n o d)).
+Proof. 
+ intros d m n o.
+ intro H. 
+ simpl. rewrite -> H. reflexivity. 
+Qed. 
+
+End Dictionary.
+
+End NatList.
