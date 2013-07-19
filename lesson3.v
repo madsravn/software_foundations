@@ -219,4 +219,329 @@ Example test_doit3times' : doit3times negb true = false.
 Proof. reflexivity. Qed. 
 
 (* CURRYING *)
-Definition prod_curry {X Y Z : Type} 
+Definition prod_curry {X Y Z : Type} (f : X * Y -> Z) (x : X) (y : Y) : Z :=
+ f (x,y).
+
+Definition prod_uncurry {X Y Z : Type} (f : X -> Y -> Z) (p : X * Y) : Z :=
+ f (fst p) (snd p).
+
+Check @prod_curry.
+Check @prod_uncurry.
+
+Theorem uncurry_curry : forall (X Y Z : Type) (f : X -> Y -> Z) x y,
+ prod_curry (prod_uncurry f) x y = f x y.
+Proof. 
+ intros X Y Z f x y. reflexivity.
+Qed. 
+
+Theorem curry_uncurry : forall (X Y Z : Type) (f : (X * Y) -> Z) (p : X * Y),
+ prod_uncurry (prod_curry f) p = f p. 
+Proof. 
+ intros X Y Z f p. 
+ destruct p.
+ assert (H1 : f (x,y) = prod_curry f x y). 
+  reflexivity. 
+ rewrite -> H1. 
+Admitted.
+
+Fixpoint filter {X : Type} (test : X -> bool) (l : list X) : (list X) :=
+ match l with
+ | [] => []
+ | h::t => if test h 
+           then h :: (filter test t)
+           else filter test t
+end.
+
+Fixpoint evenb (n : nat) :=
+match n with
+| O => true
+| S O => false
+| S (S nn) => evenb nn
+end.
+
+Example test_filter1 : filter evenb [1,2,3,4] = [2,4].
+Proof. reflexivity. Qed.
+
+Definition length_is_1 {X : Type} (l : list X) : bool :=
+ beq_nat (length l) 1. 
+
+Example test_filter2 : filter length_is_1 [[1,2],[3],[4],[5,6,7],[],[8]] = [[3],[4],[8]].
+Proof. reflexivity. Qed.
+
+Example test_filter2' : filter (fun l => beq_nat (length l) 1) [[1,2],[3],[4],[5,6,7],[],[8]] = [[3],[4],[8]].
+Proof. reflexivity. Qed.
+
+Fixpoint geq_nat (n : nat) (m : nat) :=
+match n,m with
+| O, O | _, O => true
+| O, _  => false
+| S nn, S mm => geq_nat nn mm
+end.
+
+Definition filter_even_gt7 (l : list nat) : list nat :=
+ filter (fun n => (geq_nat n 7)) (filter evenb l).
+
+Eval simpl in (filter_even_gt7 [1,2,6,9,10,3,12,8]).
+
+Example test_filter_even_gt7_1 :
+ filter_even_gt7 [1,2,6,9,10,3,12,8] = [10,12,8].
+Proof. reflexivity. Qed.   
+
+Example test_filter_even_gt7_2 :
+  filter_even_gt7 [5,2,6,19,129] = [].
+Proof. reflexivity. Qed. 
+
+Definition partition {X : Type} (test : X -> bool) (l : list X) 
+                     : list X * list X :=
+(filter test l, filter (fun x => negb (test x)) l).
+
+Definition oddb (n : nat) := negb (evenb n).
+
+Example test_partition1: partition oddb [1,2,3,4,5] = ([1,3,5], [2,4]).
+Proof. reflexivity. Qed. 
+
+Example test_partition2: partition (fun x => false) [5,9,0] = ([], [5,9,0]).
+Proof. reflexivity. Qed. 
+
+Fixpoint map {X Y : Type} (f : X -> Y) (l : list X) : (list Y) :=
+match l with
+| [] => []
+| h::t => (f h)::(map f t)
+end.
+
+Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
+ map f (rev l) = rev (map f l).
+Proof.
+ intros X Y f l.
+ induction l as [| h t].
+ simpl. reflexivity.
+ simpl. rewrite <- IHt.
+Admitted.
+
+Fixpoint flat_map {X Y : Type} (f : X -> list Y) (l : list X) : (list Y) :=
+ match l with
+ | [] => []
+ | h :: t => (f h) ++ (flat_map f t)
+end.
+
+Example test_flat_map1: 
+  flat_map (fun n => [n,n,n]) [1,5,4]
+  = [1, 1, 1, 5, 5, 5, 4, 4, 4].
+Proof. reflexivity. Qed. 
+
+Definition option_map {X Y: Type} (f : X -> Y) (xo : option X) : option Y :=
+match xo with
+| None => None
+| Some x => Some (f x)
+end.
+
+Fixpoint filter' (X : Type) (f : X -> bool) (l : list X) :=
+match l with
+| [] => []
+| h :: t => if (f h)
+            then h::(filter' X f t)
+            else filter' X f t
+end.
+
+Fixpoint map' (X  Y : Type) (f : X -> Y) (l : list X) :=
+match l with
+| [] => []
+| h::t => (f h)::(map' X Y f t)
+end.
+
+Fixpoint fold {X Y : Type} (f : X -> Y -> Y) (l : list X) (b : Y) : Y :=
+match l with
+| nil => b
+| h::t => f h (fold f t b)
+end.
+
+(* Exercise: 1 star, optional (fold_types_different)
+Observe that the type of fold is parameterized by two type 
+variables, X and Y, and the parameter f is a binary operator that 
+takes an X and a Y and returns a Y. Can you think of a situation 
+where it would be useful for X and Y to be different? *)
+
+(* When we want to perform an operation on (like a map) before aggregating. e.g.: *)
+
+Definition all_evens (l : list nat) :=
+ fold (fun n b => andb b (evenb n)) l true.
+
+Example all_evens_test1 : all_evens [0,2,4] = true.
+Proof.  reflexivity. Qed.
+Example all_evens_test2 : all_evens [] = true.
+Proof. reflexivity. Qed.
+Example all_evens_test3 : all_evens [2,4,5,8] = false.
+Proof. reflexivity. Qed. 
+
+Definition constfun {X : Type} (x : X) : nat -> X :=
+ fun (k : nat) => x.
+
+Definition ftrue := constfun true.
+
+Example constfun_example1 : ftrue 0 = true.
+Proof. reflexivity. Qed.
+
+Example constfun_example2 : (constfun 5) 99 = 5.
+Proof. reflexivity. Qed.
+
+Definition override {X : Type} (f : nat -> X) (k : nat) (x : X) : nat -> X :=
+ fun (k' : nat) => if beq_nat k k' then x else f k'.
+
+(* Exercise: 1 star (override_example)
+Before starting to work on the following proof, make sure you 
+understand exactly what the theorem is saying and can paraphrase 
+it in your own words. The proof itself is straightforward. *)
+
+Theorem override_example :  forall (b:bool), 
+  (override (constfun b) 3 true) 2 = b.
+Proof.
+ intros b. 
+ destruct b.
+ reflexivity. 
+ reflexivity. 
+Qed. 
+
+Inductive boolllist : nat -> Type :=
+ boollnil : boolllist 0
+| boollcons : forall n, bool -> boolllist n -> boolllist (S n).
+
+Implicit Arguments boollcons [[n]].
+
+Check (boollcons true (boollcons false (boollcons true boollnil))).
+
+Fixpoint blapp {n1} (l1 : boolllist n1)
+               {n2} (l2 : boolllist n2)
+               : boolllist (n1 + n2) :=
+match l1 with
+| boollnil => l2
+| boollcons _ h t => boollcons h (blapp t l2)
+end.
+
+Inductive llist (X : Type) : nat -> Type :=
+  lnil : llist X 0
+| lcons : forall n, X -> llist X n -> llist X (S n).
+
+Implicit Arguments lnil [[X]].
+Implicit Arguments lcons [[X] [n]].
+
+Check (lcons true (lcons false (lcons true lnil))).
+
+Fixpoint lapp (X : Type)
+              {n1} (l1 : llist X n1)
+              {n2} (l2 : llist X n2)
+              : llist X (n1 + n2) :=
+match l1 with
+| lnil => l2
+| lcons _ h t => lcons h (lapp X t l2)
+end.
+
+Theorem silly_ex : 
+ forall n, evenb n = true -> 
+            oddb (S n) = true -> 
+             evenb 3 = true ->
+              oddb 4 = true.
+Proof.
+ intro n.
+ intros assumption1 assumption2 assumption3. 
+ apply assumption3. 
+Qed.
+ (* whaaaaa??? *)
+
+Theorem rev_exercise1 : forall (l ll : list nat),
+ l = rev ll -> ll = rev l.
+Proof. 
+ intros l ll H1. symmetry. rewrite -> H1.
+ SearchAbout rev. 
+ apply rev_involutive. 
+Qed. 
+
+(* Exercise: 1 star (apply_rewrite)
+Briefly explain the difference between the tactics apply and 
+rewrite. Are there situations where both can usefully be applied? *)
+
+(* rewrite specifies the direction? is apply only unidirectional? *)
+
+Theorem beq_nat_refl : forall (n : nat),
+ beq_nat n n = true.
+Proof. 
+ induction n as [|nn]. reflexivity. simpl. apply IHnn. 
+Qed. 
+
+Theorem override_eq : forall {X : Type} x k (f : nat -> X),
+ (override f k x) k = x.
+Proof. 
+ intros X x k f. unfold override. rewrite -> beq_nat_refl. reflexivity. 
+Qed. 
+
+Theorem eq_add_S : forall n m : nat,
+ S n = S m -> n = m.
+Proof. 
+ intros n m H1. inversion H1. reflexivity. 
+Qed. 
+
+Theorem eq_remove_S : forall n m : nat,
+ n = m -> S n = S m.
+Proof.
+ intros n m eq. inversion eq. reflexivity.
+Qed. 
+
+Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
+     x :: y :: l = z :: j ->
+     y :: l = x :: j ->
+     x = y.
+Proof.
+  intros X x y z l j assumption1 assumption2. 
+  inversion assumption1. 
+  inversion assumption2.
+  symmetry. 
+  apply H0. 
+Qed. 
+
+Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
+ x :: y :: l = [] ->
+  y :: l = z :: j ->
+   x = z. 
+Proof. 
+ intros X x y z l j allemptyOrFalse zjEmptyOrZIsHead.
+ inversion allemptyOrFalse.
+Qed.
+
+Add Rec LoadPath "/home/etosch/dev/proofs".
+Require Import lesson1. 
+Require Import lesson2.
+
+Theorem length_snoc' : forall (X : Type) (v : X) (l : list X) (n : nat),
+ length l = n -> length (snoc l v) = S n.
+Proof. 
+ intros X v l. induction l as [| h t].
+ Case "l=[]".  intros n eq. rewrite <- eq. simpl. reflexivity. 
+ Case "l=v'::l". intros n eq. simpl. destruct n as [| nn]. simpl.
+  SCase "n=0". inversion eq. 
+  SCase "n=Sn'". apply eq_remove_S. apply IHt. inversion eq. reflexivity. 
+Qed. 
+
+Theorem beq_nat_eq_FAILED : forall n m, 
+ true = beq_nat n m -> n = m.
+Proof. 
+ intros n. induction n as [| nn]. 
+ Case "n = 0". intros m. destruct m as [| mm].
+  SCase "m = 0". reflexivity. 
+  SCase "m = S mm". simpl. intro H. inversion H. 
+ Case "n = S nn". intro m. destruct m as [| mm].
+  SCase "m = 0". simpl. intro H. inversion H. 
+  SCase "m = S mm". simpl. intro H. apply eq_remove_S. apply IHnn. apply H. 
+Qed. 
+
+(* note that calling apply IHnn dealt with the implication in its entirety. Calling rewrite generated a new subgoal *)
+Theorem beq_nat_eq' : forall m n,
+ beq_nat n m = true -> n = m. 
+Proof. 
+ intros m. induction m as [| mm].
+ intros n. induction n as [| nn]. 
+ reflexivity. 
+ intro H. inversion H. 
+ intro n. induction n as [| nn].
+ intro H. inversion H. 
+ intro H. apply eq_remove_S. simpl in H. apply IHmm. apply H. 
+Qed. 
+

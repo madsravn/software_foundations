@@ -126,7 +126,7 @@ Notation "x - y" := (minus x y)
                        : nat_scope.
 Notation "x * y" := (mult x y)
                        (at level 40, left associativity)
-                       : nat_scope.+ p) = m + (n + p).
+                       : nat_scope.
 
 Theorem assoc_add : forall n m p : nat,
   (n + m) + p = n + (m + p).
@@ -468,7 +468,7 @@ Eval simpl in (inc (Q (Q (Q P)))). (* 8 -> 9 *)
 Eval simpl in (inc (inc (Q (Q (Q R))))). (* 9 -> 11 *)
 
 
-(c) Finally, prove that your increment and binary-to-unary functions commute: that is, incrementing a binary number and then converting it to unary yields the same result as first converting it to unary and then incrementing.
+(* (c) Finally, prove that your increment and binary-to-unary functions commute: that is, incrementing a binary number and then converting it to unary yields the same result as first converting it to unary and then incrementing. *)
 
 (* FILL IN HERE *)  
   
@@ -496,8 +496,8 @@ Example test_plus2 : (plus2 2 3) = 5.
 Proof. simpl. reflexivity. Qed.
 Eval simpl in (plus2 10 5).
 
-Fixpoint plus3 (n : nat) (m : nat) : nat :=
+(* Fixpoint plus3 (n : nat) (m : nat) : nat :=
 match n with 
 | O => m
 | nn => plus3 (pred nn) (S m)
-end.
+end. *)
