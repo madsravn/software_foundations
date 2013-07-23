@@ -448,31 +448,65 @@ be correspondingly simple; it is the functions you will write next that will giv
 mathematical meaning.) *)
 
 Inductive bin : Type :=
-| P : bin
-| Q : bin -> bin
-| R : bin.
+| inf : bin
+| zero : bin -> bin
+| one : bin -> bin.
 
 (* (b) Next, write an increment function for binary numbers, and a function to convert 
 binary numbers to unary numbers. *)
 
-Fixpoint inc (n : bin) :=
-match n with 
-| P => R (* 0 -> 1 *)
-| R => Q P (* 1 -> 2*1+0 *)
-| Q(P) => Q(R) (* 2 -> 2*1 + 1 *)
-| Q(R) => Q (Q P) (* 3 -> 4 *)
-| Q(nn) => Q (inc nn)
-end. 
+(* inf
+   zero inf : 0
+   one inf : 1
+   one (zero inf) : 2
+   one (one inf) : 3
+one (one inf) -> one (inc (one inf)) -> one (one (inc inf)) -> one (one (zero inf)) 
+odd (odd O) -> even
+   one (zero (zero inf)) : 4
+*)
 
-Eval simpl in (inc (Q (Q (Q P)))). (* 8 -> 9 *)
-Eval simpl in (inc (inc (Q (Q (Q R))))). (* 9 -> 11 *)
+Fixpoint incbin (n : bin) : bin :=
+match n with
+| inf => one inf
+| zero nn => one nn
+| one nn => zero (incbin nn)
+end.
 
+Example incbin_test : incbin (one (one inf)) = zero (zero (one inf)).
+Proof. reflexivity. Qed. 
+  
+Definition incnat (n : nat) : nat := S n.
+
+Fixpoint bin_to_un (n : bin) : nat :=
+match n with
+| inf => O
+| zero nn => mult 2 (bin_to_un nn)
+| one nn => plus 1 (mult 2 (bin_to_un nn))
+end.
+
+Example test_bin_un1 : bin_to_un (zero (one (zero (one inf)))) = 10.
+Proof. reflexivity. Qed.
+
+Fixpoint un_to_bin (n : nat) : bin :=
+match n with
+| O => inf
+| S nn => incbin (un_to_bin nn) 
+end.
+
+Example test_bin_un2 : un_to_bin 14 = zero (one (one (one inf))).
+Proof. simpl. reflexivity. Qed. 
 
 (* (c) Finally, prove that your increment and binary-to-unary functions commute: that is, incrementing a binary number and then converting it to unary yields the same result as first converting it to unary and then incrementing. *)
 
-(* FILL IN HERE *)  
+Theorem inc_un_comm : forall (m : bin),
+                        bin_to_un (incbin m) = incnat (bin_to_un m).
+Proof. 
+  intro m. induction m as [|m1 |m2].
+  reflexivity. 
+  simpl. reflexivity. 
+  simpl. rewrite -> IHm2.
+  unfold incnat. 
   
-
 
 (* Exercise: 2 stars, optional (decreasing) 
 The requirement that some argument to each function be "decreasing" is a 

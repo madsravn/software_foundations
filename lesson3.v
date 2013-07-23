@@ -242,7 +242,9 @@ Proof.
  assert (H1 : f (x,y) = prod_curry f x y). 
   reflexivity. 
  rewrite -> H1. 
-Admitted.
+  reflexivity. 
+Qed.
+
 
 Fixpoint filter {X : Type} (test : X -> bool) (l : list X) : (list X) :=
  match l with
@@ -434,114 +436,4 @@ match l1 with
 | lnil => l2
 | lcons _ h t => lcons h (lapp X t l2)
 end.
-
-Theorem silly_ex : 
- forall n, evenb n = true -> 
-            oddb (S n) = true -> 
-             evenb 3 = true ->
-              oddb 4 = true.
-Proof.
- intro n.
- intros assumption1 assumption2 assumption3. 
- apply assumption3. 
-Qed.
- (* whaaaaa??? *)
-
-Theorem rev_exercise1 : forall (l ll : list nat),
- l = rev ll -> ll = rev l.
-Proof. 
- intros l ll H1. symmetry. rewrite -> H1.
- SearchAbout rev. 
- apply rev_involutive. 
-Qed. 
-
-(* Exercise: 1 star (apply_rewrite)
-Briefly explain the difference between the tactics apply and 
-rewrite. Are there situations where both can usefully be applied? *)
-
-(* rewrite specifies the direction? is apply only unidirectional? *)
-
-Theorem beq_nat_refl : forall (n : nat),
- beq_nat n n = true.
-Proof. 
- induction n as [|nn]. reflexivity. simpl. apply IHnn. 
-Qed. 
-
-Theorem override_eq : forall {X : Type} x k (f : nat -> X),
- (override f k x) k = x.
-Proof. 
- intros X x k f. unfold override. rewrite -> beq_nat_refl. reflexivity. 
-Qed. 
-
-Theorem eq_add_S : forall n m : nat,
- S n = S m -> n = m.
-Proof. 
- intros n m H1. inversion H1. reflexivity. 
-Qed. 
-
-Theorem eq_remove_S : forall n m : nat,
- n = m -> S n = S m.
-Proof.
- intros n m eq. inversion eq. reflexivity.
-Qed. 
-
-Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
-     x :: y :: l = z :: j ->
-     y :: l = x :: j ->
-     x = y.
-Proof.
-  intros X x y z l j assumption1 assumption2. 
-  inversion assumption1. 
-  inversion assumption2.
-  symmetry. 
-  apply H0. 
-Qed. 
-
-Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
- x :: y :: l = [] ->
-  y :: l = z :: j ->
-   x = z. 
-Proof. 
- intros X x y z l j allemptyOrFalse zjEmptyOrZIsHead.
- inversion allemptyOrFalse.
-Qed.
-
-Add Rec LoadPath "/home/etosch/dev/proofs".
-Require Import lesson1. 
-Require Import lesson2.
-
-Theorem length_snoc' : forall (X : Type) (v : X) (l : list X) (n : nat),
- length l = n -> length (snoc l v) = S n.
-Proof. 
- intros X v l. induction l as [| h t].
- Case "l=[]".  intros n eq. rewrite <- eq. simpl. reflexivity. 
- Case "l=v'::l". intros n eq. simpl. destruct n as [| nn]. simpl.
-  SCase "n=0". inversion eq. 
-  SCase "n=Sn'". apply eq_remove_S. apply IHt. inversion eq. reflexivity. 
-Qed. 
-
-Theorem beq_nat_eq_FAILED : forall n m, 
- true = beq_nat n m -> n = m.
-Proof. 
- intros n. induction n as [| nn]. 
- Case "n = 0". intros m. destruct m as [| mm].
-  SCase "m = 0". reflexivity. 
-  SCase "m = S mm". simpl. intro H. inversion H. 
- Case "n = S nn". intro m. destruct m as [| mm].
-  SCase "m = 0". simpl. intro H. inversion H. 
-  SCase "m = S mm". simpl. intro H. apply eq_remove_S. apply IHnn. apply H. 
-Qed. 
-
-(* note that calling apply IHnn dealt with the implication in its entirety. Calling rewrite generated a new subgoal *)
-Theorem beq_nat_eq' : forall m n,
- beq_nat n m = true -> n = m. 
-Proof. 
- intros m. induction m as [| mm].
- intros n. induction n as [| nn]. 
- reflexivity. 
- intro H. inversion H. 
- intro n. induction n as [| nn].
- intro H. inversion H. 
- intro H. apply eq_remove_S. simpl in H. apply IHmm. apply H. 
-Qed. 
 

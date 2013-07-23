@@ -291,6 +291,18 @@ Theorem nil_app : forall l : natlist,
 [] ++ l = l.
 Proof. reflexivity. Qed.
 
+Theorem app_nil_end : forall l : natlist,
+                        l ++ [] = l.
+Proof. 
+  intro l.
+  induction l as [| h t].
+  reflexivity. 
+  simpl.
+  rewrite -> IHt.
+  reflexivity. 
+Qed.
+  coq 8.4 linux package
+
 Theorem app_length : forall l1 l2 : natlist,
  length (l1 ++ l2) = (length l1) + (length l2).
 Proof. intros l1 l2.
