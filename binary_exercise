@@ -1,0 +1,111 @@
+
+(* Exercise with binary - 4 stars*)
+
+(* a - inductive definition of bin *)
+
+Inductive bin: Type :=
+  |O : bin
+  |even : bin -> bin
+  |odd : bin -> bin.
+
+(* b - increment function for binary numbers and convert from binary to unary *)
+
+Fixpoint inc (b: bin) : bin :=
+  match b with
+      | O => odd O
+      | even b' => odd b'
+      | odd b' => even (inc b')
+  end.
+
+Example test1_inc: inc (odd (even (odd O))) = even (odd (odd O)).
+Proof. reflexivity. Qed.
+
+Example test2_inc: inc (odd (odd O)) = even (even (odd O)).
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint bin_2_un (b: bin) : nat :=
+  match b with
+      | O => 0
+      | odd b' => S (2*(bin_2_un b'))
+      | even b' => 2*(bin_2_un b')
+  end.
+
+Example test: bin_2_un (even (even (odd O))) = 4.
+Proof. simpl. reflexivity. Qed.
+
+Example test2: bin_2_un (even (odd (odd (odd O)))) = 14.
+Proof. simpl. reflexivity. Qed. 
+
+(* c - increment and convert binary to unary commute *)
+
+Lemma inc_even__odd: forall b : bin,
+  inc (even b) = odd b.
+Proof.
+ intros b.
+ induction b as [|b'|b''].
+ simpl.
+ reflexivity.
+ simpl.
+ reflexivity.
+ simpl.
+ reflexivity.
+Qed.
+
+Lemma SS_mult2: forall n m: nat,
+  S n + S m = S (S (n + m)).
+Proof.
+  intros n m.
+  induction n as [|n'].
+  simpl.
+  reflexivity.
+  rewrite <- plus_n_Sm.
+  rewrite -> plus_comm.
+  rewrite <- plus_n_Sm.
+  rewrite -> plus_comm.
+  reflexivity.
+Qed.
+
+Lemma inc_odd__even: forall b: bin,
+  inc (odd b) = even (inc b).
+Proof.
+  intros b.
+  simpl.
+  reflexivity.
+Qed.
+
+Theorem comm_inc__bin_2_un: forall b: bin,
+  bin_2_un (inc b) = S (bin_2_un b).
+Proof.
+  intros b.
+  induction b as [|b'|b''].
+  reflexivity.
+  rewrite -> inc_even__odd.
+  simpl.
+  reflexivity.
+  rewrite -> inc_odd__even.
+  simpl.
+  rewrite <- SS_mult2.
+  rewrite -> IHb''.
+  simpl.
+  reflexivity.
+Qed.
+
+(* Exercise with binary inverse - 5 stars *)
+
+(* a - convert natural to binary: un_2_bin *)
+
+Fixpoint un_2_bin (n : nat) : bin :=
+  match n  with
+  | 0 => O
+  | S 0 => odd O
+  | S (S n') => match evenb n with
+             | true => even (un_2_bin n')
+             | false => even (un_2_bin n')
+            end
+ end.               
+
+Example convert1 : un_2_bin 0 = O.
+Proof. reflexivity. Qed.
+
+Example convert2: un_2_bin 3 = odd (odd O).
+Proof. simpl.
