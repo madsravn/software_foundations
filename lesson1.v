@@ -503,10 +503,13 @@ Theorem inc_un_comm : forall (m : bin),
 Proof. 
   intro m. induction m as [|m1 |m2].
   reflexivity. 
-  simpl. reflexivity. 
-  simpl. rewrite -> IHm2.
-  unfold incnat. 
-  
+  simpl. reflexivity.
+  simpl. rewrite -> IHm2. unfold incnat. rewrite <- plus_n_Sm. 
+  assert (H : S (bin_to_un m2) + bin_to_un m2 = bin_to_un m2 + S (bin_to_un m2)). 
+   apply plus_comm. 
+  rewrite -> H. rewrite <- plus_n_Sm. reflexivity. 
+Qed. 
+
 
 (* Exercise: 2 stars, optional (decreasing) 
 The requirement that some argument to each function be "decreasing" is a 

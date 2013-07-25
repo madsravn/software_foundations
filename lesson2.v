@@ -1,5 +1,5 @@
 Require Export Basics.
-
+Require Import lesson1.
 Module NatList.
 
 Inductive natprod : Type :=
@@ -301,7 +301,6 @@ Proof.
   rewrite -> IHt.
   reflexivity. 
 Qed.
-  coq 8.4 linux package
 
 Theorem app_length : forall l1 l2 : natlist,
  length (l1 ++ l2) = (length l1) + (length l2).
@@ -343,11 +342,13 @@ SearchAbout rev.
 (* Exercise: 3 stars, recommended (list_exercises) *)
 (* More practice with lists. *)
 
+(*
 Theorem app_nil_end : forall l : natlist, 
   l ++ [] = l.
 Proof. intros l. induction l as [| n ll]. reflexivity. 
 simpl. rewrite -> IHll. reflexivity. Qed.  
-  
+*)  
+
 Theorem cibele : forall (l : natlist) (n : nat),
  rev(snoc l n) = n :: (rev l).
 Proof.
@@ -509,6 +510,84 @@ Proof.
  rewrite -> H. 
  reflexivity. 
 Qed.
+
+(* Exercise: 5 stars, advanced (binary_inverse) *)
+(* This exercise is a continuation of the previous exercise about binary numbers. You will need your definitions and theorems from the previous exercise to complete this one.
+(a) First, write a function to convert natural numbers to binary numbers. Then prove that starting with any natural number, converting to binary, then converting back yields the same natural number you started with. *)
+
+Check un_to_bin.
+
+Theorem incbin_un : forall b, bin_to_un (incbin b) = S (bin_to_un b).
+Proof.
+  intros b. induction b as [|zero|one].
+  simpl. reflexivity.
+  simpl. reflexivity. 
+  simpl. rewrite -> IHone. simpl. rewrite <- plus_n_Sm. reflexivity. 
+Qed. 
+
+Theorem nat_to_bin_back : forall n : nat,
+                            bin_to_un (un_to_bin n) = n.
+Proof. 
+  intro n. induction n as [|nn].
+  simpl. reflexivity.
+  simpl. rewrite -> incbin_un. rewrite -> IHnn. reflexivity. 
+Qed. 
+
+(* (b) You might naturally think that we should also prove the opposite direction: that starting with a binary number, converting to a natural, and then back to binary yields the same number we started with. However, it is not true! Explain what the problem is. *)
+
+Fixpoint plus_bin (b1 : bin) (b2 : bin) (carry : bool) : bin :=
+  match b1 with
+    | inf => match b2 with
+               | inf => if carry then one inf else zero inf
+               | _ => if carry then one b2 else b2
+             end
+    | zero n => match b2 with
+                  | inf => b1
+                  | zero m => if carry then one (plus_bin n m false) else zero (plus_bin n m true)
+                  | one m => if carry then zero (plus_bin n m true) else one (plus_bin n m false)
+                end
+    | one n => match b2 with
+                 | inf => if carry then one b1 else b1
+                 | zero m => if carry then zero (plus_bin n m true) else one (plus_bin n m false)
+                 | one m => if carry then one (plus_bin n m true) else zero (plus_bin n m true)
+               end
+  end.
+
+Notation "x +b y" := (plus_bin x y false) (at level 50, left associativity) : nat_scope. 
+
+Example plus_bin_test1 : (un_to_bin 5) +b (un_to_bin 7) = (un_to_bin 12).
+Proof. simpl. reflexivity. Qed. 
+Example plus_bin_test2 : (un_to_bin 8) +b (un_to_bin 3) = (un_to_bin 11).
+Proof. simpl. reflexivity. Qed.
+
+Theorem remove_zero_bin : forall p q,
+                            p = q -> zero p = zero q. 
+Proof. intros p q H. 
+  rewrite -> H. reflexivity. 
+Qed. 
+
+Theorem bin_double_zero : forall m,
+                              zero m = m +b m.
+Proof. intro m. induction m as [|p|q].
+  Case "inf". simpl. reflexivity. 
+  Case "zero". simpl. rewrite -> IHp. apply remove_zero_bin. symmetry. 
+Admitted. 
+
+
+Theorem bin_to_nat_back : forall b : bin,
+                            un_to_bin (bin_to_un b) = b. 
+Proof. 
+  intro b. induction b as [|n|m].
+  Case "inf". simpl. reflexivity. 
+  Case "zero". simpl. 
+Admitted.
+(* I'm going to guess that this has something to do with how you don't know where the zero in a binary 
+number comes from? Like, it could come from adding two zeros or it could come from adding two ones? 
+Maybe this makes the structure difficult for using induction? *)
+
+(* (c) Define a function normalize from binary numbers to binary numbers such that for any binary number b, converting to a natural and then back to binary yields (normalize b). Prove it.
+Again, feel free to change your earlier definitions if this helps here. *)
+
 
 Module Dictionary.
 

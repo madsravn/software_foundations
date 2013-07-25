@@ -194,8 +194,29 @@ Proof.
   intro E. inversion E. inversion H0. inversion H2. 
 Qed. 
 
+Theorem uniqueness_of_zero_l : forall n m,
+                               n + m = 0 -> n = 0.
+Proof. 
+  intros n m. destruct n as [|nn]. destruct m as [|mm]. 
+  reflexivity.
+  simpl. intro H. inversion H. 
+  destruct m as [| mm].
+  simpl. intro H. inversion H. 
+  intro H. inversion H. 
+Qed.
+
+Theorem uniqueness_of_zero_r : forall n m, 
+                                 n + m = 0 -> m = 0.
+Proof. 
+  intros n m. assert (n+m=m+n). apply plus_comm.
+  rewrite -> H. apply uniqueness_of_zero_l.
+Qed.
+  
 Theorem ev_ev__ev : forall n m,
                       ev (n + m) -> ev n -> ev m.
 Proof.
-  intros n m H1 H2. 
-  apply ev_even in H1. unfold even in H1. 
+  intros n m H1.
+  inversion H1 as [zed|ss].
+  intro H2. 
+  symmetry in zed. apply uniqueness_of_zero_r in zed. rewrite -> zed. apply ev_0.
+  intro H2. 
