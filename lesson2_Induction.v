@@ -414,6 +414,8 @@ Proof: By induction on n.
 Exercise: 2 stars, optional (beq_nat_refl_informal)
 Write an informal proof of the following theorem, using the informal proof of plus_assoc as a model. Don't just paraphrase the Coq tactics into English!
 **************************************************)
+
+(***
 Theorem: true = beq_nat n n for any n.
 Proof: By cases. 
   First let n=0. Clearly beq_nat 0 0 evaluates to true. 
@@ -423,3 +425,4 @@ Proof: By cases.
   Since the two arguments are identical, they must be composed of identical S's and therefore
   must terminate in equal steps. Since this is the condition for equality, we can say that beq_nat n n for any
   n must be true.
+***)
