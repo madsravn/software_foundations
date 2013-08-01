@@ -362,88 +362,11 @@ Qed.
 (* (b) You might naturally think that we should also prove the opposite direction: that starting with a binary number, converting to a natural, and then back to binary yields the same number we started with. However, it is not true! Explain what the problem is. *)
 
 (* Having problems with the base case, since there are "two ways" to represent zero *)
-
-Fixpoint all_zeroes (b : Lesson1.bin) : bool :=
-  match b with
-    | Lesson1.inf => true
-    | Lesson1.one bb => false
-    | Lesson1.zero bb => all_zeroes bb
-  end.
-
-Definition elim_zeroes (b : Lesson1.bin) : Lesson1.bin :=
-  match all_zeroes b with
-    | true => Lesson1.inf
-    | false => b
-  end.
-
-(* redefining un_to_bin *)
-
-Fixpoint un_to_bin (n : nat) : Lesson1.bin :=
-  elim_zeroes (match n with
-                 | O => Lesson1.inf
-                 | S nn => Lesson1.incbin (Lesson1.un_to_bin nn) 
-               end).
-
-(* Fixpoint plus_bin (b1 : Lesson1.bin) (b2 : Lesson1.bin) (carry : bool) : Lesson1.bin := *)
-(*   match b1 with *)
-(*     | Lesson1.inf => match b2 with *)
-(*                        | Lesson1.inf => if carry  *)
-(*                                         then Lesson1.one Lesson1.inf  *)
-(*                                         else Lesson1.zero Lesson1.inf *)
-(*                        | _ => if carry  *)
-(*                               then Lesson1.one b2  *)
-(*                               else b2 *)
-(*                      end *)
-(*     | Lesson1.zero n => match b2 with *)
-(*                           | Lesson1.inf => b1 *)
-(*                           | Lesson1.zero m => if carry  *)
-(*                                               then Lesson1.one (plus_bin n m false)  *)
-(*                                               else Lesson1.zero (plus_bin n m true) *)
-(*                           | Lesson1.one m => if carry  *)
-(*                                              then Lesson1.zero (plus_bin n m true)  *)
-(*                                              else Lesson1.one (plus_bin n m false) *)
-(*                         end *)
-(*     | Lesson1.one n => match b2 with *)
-(*                          | inf => if carry  *)
-(*                                   then Lesson1.one b1  *)
-(*                                   else b1 *)
-(*                          | Lesson1.zero m => if carry  *)
-(*                                              then Lesson1.zero (plus_bin n m true)  *)
-(*                                              else Lesson1.one (plus_bin n m false) *)
-(*                          | Lesson1.one m => if carry  *)
-(*                                             then Lesson1.one (plus_bin n m true)  *)
-(*                                             else Lesson1.zero (plus_bin n m true) *)
-(*                        end *)
-(*   end. *)
-
-(* Notation "x +b y" := (plus_bin x y false) (at level 50, left associativity) : nat_scope.  *)
-
-(* Example plus_bin_test1 : (un_to_bin 5) +b (un_to_bin 7) = (un_to_bin 12). *)
-(* Proof. simpl. reflexivity. Qed.  *)
-(* Example plus_bin_test2 : (un_to_bin 8) +b (un_to_bin 3) = (un_to_bin 11). *)
-(* Proof. simpl. reflexivity. Qed. *)
-
-
-(* Lemma double_zero : forall (n : nat), *)
-(*                       elim_zeroes (Lesson1.un_to_bin (double n)) = elim_zeroes (Lesson1.zero (Lesson1.un_to_bin n)). *)
-(* Proof. *)
-(*   intro n. induction n as [|nn]. *)
-(*   simpl. compute. reflexivity. *)
-(*   simpl.  *)
-
-(* Theorem bin_to_nat_back : forall b : Lesson1.bin, *)
-(*                             un_to_bin (Lesson1.bin_to_un b) = b.  *)
-(* Proof.  *)
-(*   intro b. induction b as [|n|m]. *)
-(*   Case "inf". simpl. reflexivity.  *)
-(*   Case "zero".  *)
-(*   simpl. *)
-(*   rewrite -> Lesson1.plus_0_r. *)
-(*   rewrite <- double_plus. *)
-  
-(* I'm going to guess that this has something to do with how you don't know where the zero in a binary 
-number comes from? Like, it could come from adding two zeros or it could come from adding two ones? 
-Maybe this makes the structure difficult for using induction? *)
+(* In fact, the biggest problem seems to be that are infinite ways of expressing numbers  *)
+(* out of zeroes and ones. (thanks to cibele for pointing out that normalize needed to cover *)
+(* all padding - not just this case!) this is a problem becuase we don't know if the zeroes *)
+(* in the inductive case should actually be there and we could compare two numbers that are *)
+(* structurally different but semantically the same *)
 
 (* (c) Define a function normalize from binary numbers to binary numbers such that for any binary number b, converting to a natural and then back to binary yields (normalize b). Prove it.
 
@@ -458,3 +381,45 @@ Theorem normalized : forall (b : Lesson1.bin),
 Proof.
   intros b. compute. reflexivity.
 Qed.
+
+
+
+(**************************************************
+Exercise: 2 stars, advanced (plus_comm_informal)
+Translate your solution for plus_comm into an informal proof.
+**************************************************)
+(***
+
+Theorem: Addition is commutative (for any natural numbers n and m, 
+ n + m = m + n
+Proof: By induction on n.
+
+  Base case: n=0. 
+  Substituting the base case for n, we get 0 + m = m + 0. 
+  By the additive identity, we can rewrite this to m = m, which is true by reflexivity.
+
+  Inductive hypothesis: Assume n + m = m + n.
+  Show that (S n) + m = m + (S n). We will derive the expression on the right from the left.
+  By the definition of unary increment, we can rewrite the left hand side as (n + S O) + m. 
+  By associativity, we can express this as n + (S O + m). We have previously shown that adding
+  one is commutative, so we can apply commutativity to the second sum and then apply our rewrite rule for sums:
+  n + S (m + O). By additive identity and our definition of addition, we can say that n + S (m + O) = S (n + m).
+  Applying the inductive hypothesis, we get S (m + n). Applying our definition of addition again, we obtain our 
+  result. 
+***)
+
+
+
+(**************************************************
+Exercise: 2 stars, optional (beq_nat_refl_informal)
+Write an informal proof of the following theorem, using the informal proof of plus_assoc as a model. Don't just paraphrase the Coq tactics into English!
+**************************************************)
+Theorem: true = beq_nat n n for any n.
+Proof: By cases. 
+  First let n=0. Clearly beq_nat 0 0 evaluates to true. 
+  Now let n be some number greater than zero. beq_nat operates over the structure of the number; it compares
+  two numbers on the basis of the number of recursive steps it takes. If one number reaches zero before the other,
+  this means that one number must have more S's than the other and thus are not equal. 
+  Since the two arguments are identical, they must be composed of identical S's and therefore
+  must terminate in equal steps. Since this is the condition for equality, we can say that beq_nat n n for any
+  n must be true.
