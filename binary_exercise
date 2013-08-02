@@ -1,4 +1,3 @@
-
 (* Exercise with binary - 4 stars*)
 
 (* a - inductive definition of bin *)
@@ -109,3 +108,38 @@ Proof. reflexivity. Qed.
 
 Example convert2: un_2_bin 3 = odd (odd O).
 Proof. simpl.
+
+
+
+Theorem incbin_un : forall b: bin, 
+  bin_2_un (inc b) = S (bin_2_un b).
+Proof.
+  intros b. 
+  induction b as [|b'|b''].
+  simpl. reflexivity.
+  simpl. reflexivity. 
+  simpl. rewrite -> IHb''. simpl. rewrite <- plus_n_Sm. reflexivity. 
+Qed. 
+
+Theorem nat_to_bin_back : forall n : nat,
+  bin_2_un (un_2_bin n) = n.
+Proof. 
+  intro n. induction n as [|n'].
+  simpl. reflexivity.
+  simpl. rewrite -> incbin_un. rewrite -> IHn'. reflexivity. 
+Qed. 
+
+(* Define the function normalize and the previous opposite direction of the previous theorem *)
+
+Fixpoint normalize (b : bin) : bin := 
+  match b with
+  | O => O
+  | odd b' => odd (normalize b')
+  | even b' => match bin_2_un(b') with
+                | 0 => normalize b'
+                | S n => even (normalize b')
+               end  
+  end.
+
+Example testing: normalize (even (odd (even (odd (even (even O)))))) = even (odd (even (odd O))).  
+Proof. simpl. reflexivity. Qed.
