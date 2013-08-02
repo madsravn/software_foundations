@@ -426,3 +426,5 @@ Proof: By cases.
   must terminate in equal steps. Since this is the condition for equality, we can say that beq_nat n n for any
   n must be true.
 ***)
+
+End Lesson2.

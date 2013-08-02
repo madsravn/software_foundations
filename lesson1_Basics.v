@@ -1,6 +1,5 @@
 (* Software Foundations Chapter 1 : Basics *)
-
-
+Module Lesson1.
 
 (**************************************************
   Exercise: 1 star (nandb)
@@ -262,16 +261,43 @@ Proof. simpl. reflexivity. Qed.
 
 (* (c) Finally, prove that your increment and binary-to-unary functions commute: that is, incrementing a binary number and then converting it to unary yields the same result as first converting it to unary and then incrementing. *)
 
+Theorem plus_n_Sm : forall n m: nat,
+                      S (n + m) = n + (S m).
+Proof.
+  intros n m.
+  induction n as [| nn].
+  simpl. reflexivity.
+  simpl. rewrite -> IHnn. reflexivity.
+Qed.
+
+Theorem plus_0_r : forall n : nat,
+                     n + 0 = n.
+Proof. 
+  induction n as [|nn].
+  reflexivity.
+  simpl. rewrite -> IHnn. reflexivity.
+Qed.
+
+Theorem plus_comm : forall a b : nat,
+                      a + b = b + a.
+Proof.
+  intros a b.
+  induction a as [|aa].
+  simpl. rewrite -> plus_0_r. reflexivity.
+  simpl. rewrite -> IHaa.
+  rewrite -> plus_n_Sm. reflexivity.
+Qed. 
+
 Theorem inc_un_comm : forall (m : bin),
                         bin_to_un (incbin m) = incnat (bin_to_un m).
 Proof. 
   intro m. induction m as [|m1 |m2].
   reflexivity. 
   simpl. reflexivity.
-  simpl. rewrite -> IHm2. unfold incnat. rewrite <- plus_n_Sm. 
+  simpl. rewrite -> IHm2. unfold incnat. rewrite -> plus_n_Sm. 
   assert (H : S (bin_to_un m2) + bin_to_un m2 = bin_to_un m2 + S (bin_to_un m2)). 
    apply plus_comm. 
-  rewrite -> H. rewrite <- plus_n_Sm. reflexivity. 
+  simpl. reflexivity. 
 Qed. 
 
 
@@ -298,3 +324,5 @@ match n with
 | O => m
 | nn => plus3 (pred nn) (S m)
 end. *)
+
+End Lesson1.
