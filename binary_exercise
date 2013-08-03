@@ -89,26 +89,25 @@ Proof.
   reflexivity.
 Qed.
 
+
 (* Exercise with binary inverse - 5 stars *)
 
 (* a - convert natural to binary: un_2_bin *)
 
 Fixpoint un_2_bin (n : nat) : bin :=
-  match n  with
+  match n with
   | 0 => O
-  | S 0 => odd O
-  | S (S n') => match evenb n with
-             | true => even (un_2_bin n')
-             | false => even (un_2_bin n')
-            end
- end.               
+  | S n' => inc (un_2_bin n')
+  end.
 
 Example convert1 : un_2_bin 0 = O.
 Proof. reflexivity. Qed.
 
 Example convert2: un_2_bin 3 = odd (odd O).
-Proof. simpl.
+Proof. simpl. reflexivity. Qed.
 
+Example convert3: un_2_bin 13 = odd (even (odd (odd O))).
+Proof. simpl.
 
 
 Theorem incbin_un : forall b: bin, 
@@ -141,5 +140,5 @@ Fixpoint normalize (b : bin) : bin :=
                end  
   end.
 
-Example testing: normalize (even (odd (even (odd (even (even O)))))) = even (odd (even (odd O))).  
+Example testing: normalize (even (odd (even (odd (even (even (even O))))))) = even (odd (even (odd O))).  
 Proof. simpl. reflexivity. Qed.
