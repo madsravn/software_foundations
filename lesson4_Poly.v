@@ -1,4 +1,4 @@
-Add LoadPath "./sf".
+Add LoadPath "./bin".
 Require Export Lists.
 Require Import lesson3_Lists.
 
