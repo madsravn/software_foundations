@@ -1,8 +1,8 @@
 (* Software Foundations Chapter 2 : Induction *)
+Add LoadPath "./bin".
 Require Export Basics.
 Require Import lesson1_Basics.
 
-Module Lesson2.
 (**************************************************
   Exercise: 2 stars (andb_true_elim2)
   Prove andb_true_elim2, marking cases (and subcases) when you use destruct.
@@ -67,8 +67,8 @@ Proof.
   simpl. rewrite -> IHnn. reflexivity. 
 Qed.
 
-Check Lesson1.plus_n_Sm. 
-Check Lesson1.plus_comm.
+Check plus_n_Sm. 
+Check plus_comm.
 (* defined in lesson1_Basics - left over from the older SF ordering and used 
    in the binary problem 
 *)
@@ -132,7 +132,7 @@ Proof.
   rewrite -> plus_assoc.
   rewrite -> plus_assoc.
   assert(H1 : m + n = n + m). 
-   rewrite -> Lesson1.plus_comm. reflexivity.
+   rewrite -> plus_comm. reflexivity.
   rewrite <- H1. reflexivity.
 Qed. 
 
@@ -157,7 +157,7 @@ Theorem add_comm_mult : forall n m p,
                           n + m * p = m * p + n.
 Proof.
   intros n m p. induction n as [| nn].
-  simpl. rewrite -> Lesson1.plus_0_r. reflexivity. 
+  simpl. rewrite -> plus_0_r. reflexivity. 
   simpl. rewrite -> IHnn. rewrite -> plus_n_Sm. reflexivity. 
 Qed.  
 
@@ -199,7 +199,8 @@ Proof.
    simpl. reflexivity.
   rewrite <- evens.
   assert (add_neg : evenb (S nn) = negb (negb (evenb (S nn)))).
-   rewrite -> Lesson1.negb_involutive. reflexivity.
+   SearchAbout negb.
+   rewrite -> Basics.negb_involutive. reflexivity.
   rewrite -> add_neg.
   rewrite <- IHnn.
   reflexivity.
@@ -212,8 +213,9 @@ Qed.
   Take a piece of paper. For each of the following theorems, first think about whether (a) it can be proved using only simplification and rewriting, (b) it also requires case analysis (destruct), or (c) it also requires induction. Write down your prediction. Then fill in the proof. (There is no need to turn in your piece of paper; this is just to encourage you to reflect before hacking!)
 **************************************************)
 
+
 Theorem ble_nat_refl : forall n:nat,
-  true = Lesson1.ble_nat n n.
+                         true = Basics.ble_nat n n.
 Proof.
   intros n. induction n as [|nn]. 
   simpl. reflexivity.
@@ -221,11 +223,11 @@ Proof.
 Qed.
 
 Theorem zero_nbeq_S :  forall n:nat,
-  Lesson1.beq_nat 0 (S n) = false.
+                         Basics.beq_nat 0 (S n) = false.
 Proof. intros n. simpl. reflexivity. Qed.
 
 Theorem andb_false_r : forall b : bool,
-  andb b false = false.
+                         andb b false = false.
 Proof.
   intros b. destruct b.
   simpl. reflexivity. 
@@ -233,30 +235,30 @@ Proof.
 Qed.
 
 Theorem plus_ble_compat_l :  forall n m p : nat,
-  Lesson1.ble_nat n m = true -> Lesson1.ble_nat (p + n) (p + m) = true.
+                               Basics.ble_nat n m = true -> Basics.ble_nat (p + n) (p + m) = true.
 Proof.
   intros n m p. induction p as [| pp].
   simpl. induction n as [| nn]. 
   Theorem zero_ble_S : forall n : nat,
-    Lesson1.ble_nat 0 n = true.
+    Basics.ble_nat 0 n = true.
   Proof.
     intros n. induction n as [| nn]. 
     simpl. reflexivity. 
     simpl. reflexivity. 
   Qed. 
   rewrite -> zero_ble_S. reflexivity.
-  destruct (Lesson1.ble_nat (S nn) m). reflexivity. 
+  destruct (Basics.ble_nat (S nn) m). reflexivity. 
   intro H. rewrite <- H. reflexivity. 
   simpl. intro H. rewrite <- IHpp. 
   reflexivity. rewrite -> H. reflexivity. 
 Qed.
 
 Theorem S_nbeq_0 : forall n:nat,
-  Lesson1.beq_nat (S n) 0 = false.
+  Basics.beq_nat (S n) 0 = false.
 Proof. intros n. simpl. reflexivity. Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
-Proof. intros n. simpl. rewrite -> Lesson1.plus_0_r. reflexivity. Qed.
+Proof. intros n. simpl. rewrite -> plus_0_r. reflexivity. Qed.
 
 Theorem all3_spec : forall b c : bool,
     orb
@@ -277,7 +279,7 @@ Proof.
  intros n m p. induction n as [|nn].
  simpl. reflexivity. 
  simpl. rewrite -> add_comm_mult. rewrite -> IHnn. 
- rewrite <- Lesson1.plus_comm. rewrite <- plus_assoc.
+ rewrite <- plus_comm. rewrite <- plus_assoc.
  reflexivity. 
 Qed.
 
@@ -294,7 +296,7 @@ Qed.
   Prove the following theorem. Putting true on the left-hand side of the equality may seem odd, but this is how the theorem is stated in the standard library, so we follow suit. Since rewriting works equally well in either direction, we will have no problem using the theorem no matter which way we state it.
 **************************************************)
 Theorem beq_nat_refl : forall n : nat, 
-                         true = Lesson1.beq_nat n n.
+                         true = Basics.beq_nat n n.
 Proof.
   intros n. induction n as [|nn].
   Case "n is zero".
@@ -316,10 +318,10 @@ Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   intros n m p. 
-  rewrite <- Lesson1.plus_comm. 
+  rewrite <- plus_comm. 
   replace (n + p) with (p + n). 
   rewrite -> plus_assoc. reflexivity. 
-  rewrite -> Lesson1.plus_comm. reflexivity. 
+  rewrite -> plus_comm. reflexivity. 
 Qed.
 
 (**************************************************
@@ -329,7 +331,7 @@ Qed.
 (Before you start working on this exercise, please copy the definitions from your solution to the binary exercise here so that this file can be graded on its own. If you find yourself wanting to change your original definitions to make the property easier to prove, feel free to do so.)
 **************************************************)
 
-Check Lesson1.inc_un_comm.
+Check inc_un_comm.
 
 
 
@@ -340,10 +342,10 @@ Check Lesson1.inc_un_comm.
 
 (* (a) First, write a function to convert natural numbers to binary numbers. Then prove that starting with any natural number, converting to binary, then converting back yields the same natural number you started with. *)
 
-Check Lesson1.un_to_bin.
+Check un_to_bin.
 
 Theorem incbin_un : forall b, 
-                      Lesson1.bin_to_un (Lesson1.incbin b) = S (Lesson1.bin_to_un b).
+                      bin_to_un (incbin b) = S (bin_to_un b).
 Proof.
   intros b. induction b as [|zero|one].
   simpl. reflexivity.
@@ -352,7 +354,7 @@ Proof.
 Qed. 
 
 Theorem nat_to_bin_back : forall n : nat,
-                            Lesson1.bin_to_un (Lesson1.un_to_bin n) = n.
+                            bin_to_un (un_to_bin n) = n.
 Proof. 
   intro n. induction n as [|nn].
   simpl. reflexivity.
@@ -373,14 +375,185 @@ Qed.
 Again, feel free to change your earlier definitions if this helps here. 
 *)
 
-Definition normalize (b : Lesson1.bin) : Lesson1.bin := 
-  Lesson1.un_to_bin (Lesson1.bin_to_un b).
+(**
+Definition normalize (b : bin) : bin := 
+  un_to_bin (bin_to_un b).
 
-Theorem normalized : forall (b : Lesson1.bin),
-                       Lesson1.un_to_bin (Lesson1.bin_to_un  b) = (normalize b).
+Theorem normalized : forall (b : bin),
+                       un_to_bin (bin_to_un  b) = (normalize b).
 Proof.
   intros b. compute. reflexivity.
 Qed.
+**)
+
+(** cibele's normalize function, with one small change  **)
+Fixpoint normalize (b : bin) : bin := 
+  match b with
+  | inf => inf
+  | one b' => one (normalize b')
+  | zero b' => match bin_to_un b' with
+                | 0 => inf
+                | S n => zero (normalize b')
+               end  
+  end.
+
+Example normalize_test1 : normalize (zero (zero (zero inf))) = inf.
+Proof. simpl. reflexivity. Qed.
+Example normalize_test2 : normalize (one (zero (zero inf))) = one inf.
+Proof. simpl. reflexivity. Qed.
+Example normalize_test3 : normalize (zero (one (zero (one inf)))) = zero (one (zero (one inf))).
+Proof. simpl. reflexivity. Qed.
+
+Theorem zero_incbin_comm : forall (b : bin),
+                             zero (incbin b) = incbin (incbin (zero b)).
+Proof.
+  intros b.
+  destruct b as [|bb|bb].
+  Case "b is inf".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  simpl.
+  reflexivity.
+Qed.
+
+Theorem one_incbin_comm : forall (b : bin),
+                            one (incbin b) = incbin (incbin (incbin (zero b))).
+Proof.
+  intros b.
+  destruct b as [|bb|bb].
+  Case "b is inf".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  simpl.
+  reflexivity.
+  Case "b is some one bb".
+  simpl.
+  reflexivity.
+Qed.
+
+Theorem uniqueness_of_0_l : forall (n m : nat),
+                              n + m = 0 -> n = 0.
+Proof.
+  intros n m.
+  destruct n as [|nn].
+  reflexivity.
+  intro H.
+  inversion H.
+Qed.
+
+Theorem bin_zero : forall (b : bin),
+                     bin_to_un b = 0 -> normalize b = inf.
+Proof.
+  intros b.
+  induction b as [|bb|bb].
+  Case "b is inf".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  intro H.
+  simpl in H.
+  rewrite plus_0_r in H.
+  apply uniqueness_of_0_l in H.
+  simpl.
+  rewrite H.
+  reflexivity.
+  Case "b is some one bb".
+  intro H.
+  inversion H.
+Qed.
+
+Theorem normalize_incbin_comm : forall (b : bin),
+                                  normalize (incbin b) = incbin (normalize b).
+Proof.
+  intros b.
+  induction b as [|bb|bb].
+  Case "b is inf".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  simpl.
+  destruct (bin_to_un bb) as [|bb'] eqn:bin2un.
+  SCase "(bin_to_un bb) is zero".
+  simpl.
+  apply bin_zero in bin2un.
+  rewrite bin2un.
+  reflexivity.
+  SCase "(bin_to_un bb) is nonzero".
+  simpl.
+  reflexivity.
+  Case "b is some one bb".
+  simpl.
+  assert (H : beqbin_to_un (incbin bb) > 0).
+    induction bb as [|a|a].
+    compute. reflexivity.
+    simpl. compute.
+
+
+  Print incbin.
+  assert (Lem1 : incbin (one bb) = zero (incbin bb)).
+   simpl. reflexivity.
+  rewrite Lem1.
+  Print normalize.
+  assert (Lem2 : normalize (one bb) = one (normalize bb)).
+   simpl. reflexivity.
+  rewrite Lem2.
+  
+
+
+
+
+Theorem double_bin : forall (n : nat),
+                       un_to_bin (n + n) = normalize (zero (un_to_bin n)).
+  intros m.
+  induction m as [|mm].
+  SSCase "n is zero".
+  simpl.
+  reflexivity.
+  SSCase "n is some S mm".
+  rewrite <- plus_n_Sm.
+  rewrite plus_comm.
+  rewrite <- plus_n_Sm.
+  (* trying to avoid unfolding normalize *)
+  assert (left_side : un_to_bin (S (S (mm+mm))) = incbin (incbin (un_to_bin (mm+mm)))).
+   simpl. reflexivity.
+  rewrite left_side.
+  assert (right_side : un_to_bin (S mm) = incbin (un_to_bin mm)).
+   simpl. reflexivity.
+  rewrite right_side.
+  rewrite zero_incbin_comm.
+  
+
+
+
+
+
+Theorem normalized : forall (b : bin),
+                       un_to_bin (bin_to_un b) = (normalize b).
+Proof. 
+  intros b.
+  induction b as [|bb|bb].
+  Case "b is inf".
+  simpl.
+  reflexivity.
+  Case "b is some zero bb".
+  simpl.
+  destruct (bin_to_un bb) as [|n].
+  SCase "(bin_to_un bb) is 0".
+  simpl.
+  reflexivity.
+  SCase "(bin_to_un bb) is some S n".
+  rewrite plus_0_r.
+  rewrite <- IHbb.
+  simpl.
+  rewrite <- plus_n_Sm.
+  simpl.
+
+
 
 
 
@@ -426,5 +599,3 @@ Proof: By cases.
   must terminate in equal steps. Since this is the condition for equality, we can say that beq_nat n n for any
   n must be true.
 ***)
-
-End Lesson2.

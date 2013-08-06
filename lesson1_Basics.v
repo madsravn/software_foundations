@@ -1,5 +1,4 @@
 (* Software Foundations Chapter 1 : Basics *)
-Module Lesson1.
 
 (**************************************************
   Exercise: 1 star (nandb)
@@ -325,4 +324,3 @@ match n with
 | nn => plus3 (pred nn) (S m)
 end. *)
 
-End Lesson1.
