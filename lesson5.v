@@ -4,12 +4,6 @@ Require Import lesson1.
 Require Import lesson4. 
 
 
-  Inductive beautiful : nat -> Prop :=
-  b_0 : beautiful 0
-| b_3 : beautiful 3
-| b_5 : beautiful 5
-| b_sum : forall n m, beautiful n -> beautiful m -> beautiful (n+m).
-
 Theorem three_is_beautiful: beautiful 3.
 Proof.
    (* This simply follows from the rule b_3. *)
@@ -35,20 +29,6 @@ Proof.
 Qed. 
 
 (*Exercise: 2 stars (b_timesm) *)
-Theorem b_timesm: forall n m, beautiful n ->  beautiful (m*n).
-Proof.
-  intros n m H. induction m as [|mm].
-  simpl. apply b_0.
-  assert (S mm * n = n * S mm).
-   apply mult_comm.
-  rewrite -> H0.
-  Check mult_m_Sn.
-  rewrite -> mult_m_Sn.
-  apply b_sum with (n:=n*mm) (m:=n).
-  rewrite -> mult_comm.
-  apply IHmm. 
-  apply H.
-Qed.
 
 Inductive gorgeous : nat -> Prop :=
   g_0 : gorgeous 0 

@@ -1,6 +1,5 @@
 (* Software Foundations Chapter 3 : Lists *)
 Add LoadPath "./bin".
-Require Export Induction.
 Require Import lesson1_Basics.
 Require Import lesson2_Induction.
 

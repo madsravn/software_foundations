@@ -1,7 +1,6 @@
 (* Software Foundations Chapter 2 : Induction *)
 Add LoadPath "./bin".
-Require Export Basics.
-Require Import lesson1_Basics.
+Require Export lesson1_Basics.
 
 (**************************************************
   Exercise: 2 stars (andb_true_elim2)
@@ -200,7 +199,7 @@ Proof.
   rewrite <- evens.
   assert (add_neg : evenb (S nn) = negb (negb (evenb (S nn)))).
    SearchAbout negb.
-   rewrite -> Basics.negb_involutive. reflexivity.
+   rewrite -> negb_involutive. reflexivity.
   rewrite -> add_neg.
   rewrite <- IHnn.
   reflexivity.
@@ -215,7 +214,7 @@ Qed.
 
 
 Theorem ble_nat_refl : forall n:nat,
-                         true = Basics.ble_nat n n.
+                         true = ble_nat n n.
 Proof.
   intros n. induction n as [|nn]. 
   simpl. reflexivity.
@@ -223,7 +222,7 @@ Proof.
 Qed.
 
 Theorem zero_nbeq_S :  forall n:nat,
-                         Basics.beq_nat 0 (S n) = false.
+                         beq_nat 0 (S n) = false.
 Proof. intros n. simpl. reflexivity. Qed.
 
 Theorem andb_false_r : forall b : bool,
@@ -235,26 +234,26 @@ Proof.
 Qed.
 
 Theorem plus_ble_compat_l :  forall n m p : nat,
-                               Basics.ble_nat n m = true -> Basics.ble_nat (p + n) (p + m) = true.
+                               ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
 Proof.
   intros n m p. induction p as [| pp].
   simpl. induction n as [| nn]. 
   Theorem zero_ble_S : forall n : nat,
-    Basics.ble_nat 0 n = true.
+    ble_nat 0 n = true.
   Proof.
     intros n. induction n as [| nn]. 
     simpl. reflexivity. 
     simpl. reflexivity. 
   Qed. 
   rewrite -> zero_ble_S. reflexivity.
-  destruct (Basics.ble_nat (S nn) m). reflexivity. 
+  destruct (ble_nat (S nn) m). reflexivity. 
   intro H. rewrite <- H. reflexivity. 
   simpl. intro H. rewrite <- IHpp. 
   reflexivity. rewrite -> H. reflexivity. 
 Qed.
 
 Theorem S_nbeq_0 : forall n:nat,
-  Basics.beq_nat (S n) 0 = false.
+  beq_nat (S n) 0 = false.
 Proof. intros n. simpl. reflexivity. Qed.
 
 Theorem mult_1_l : forall n:nat, 1 * n = n.
@@ -296,7 +295,7 @@ Qed.
   Prove the following theorem. Putting true on the left-hand side of the equality may seem odd, but this is how the theorem is stated in the standard library, so we follow suit. Since rewriting works equally well in either direction, we will have no problem using the theorem no matter which way we state it.
 **************************************************)
 Theorem beq_nat_refl : forall n : nat, 
-                         true = Basics.beq_nat n n.
+                         true = beq_nat n n.
 Proof.
   intros n. induction n as [|nn].
   Case "n is zero".
@@ -467,91 +466,91 @@ Proof.
   inversion H.
 Qed.
 
-Theorem normalize_incbin_comm : forall (b : bin),
-                                  normalize (incbin b) = incbin (normalize b).
-Proof.
-  intros b.
-  induction b as [|bb|bb].
-  Case "b is inf".
-  simpl.
-  reflexivity.
-  Case "b is some zero bb".
-  simpl.
-  destruct (bin_to_un bb) as [|bb'] eqn:bin2un.
-  SCase "(bin_to_un bb) is zero".
-  simpl.
-  apply bin_zero in bin2un.
-  rewrite bin2un.
-  reflexivity.
-  SCase "(bin_to_un bb) is nonzero".
-  simpl.
-  reflexivity.
-  Case "b is some one bb".
-  simpl.
-  assert (H : beqbin_to_un (incbin bb) > 0).
-    induction bb as [|a|a].
-    compute. reflexivity.
-    simpl. compute.
+(* Theorem normalize_incbin_comm : forall (b : bin), *)
+(*                                   normalize (incbin b) = incbin (normalize b). *)
+(* Proof. *)
+(*   intros b. *)
+(*   induction b as [|bb|bb]. *)
+(*   Case "b is inf". *)
+(*   simpl. *)
+(*   reflexivity. *)
+(*   Case "b is some zero bb". *)
+(*   simpl. *)
+(*   destruct (bin_to_un bb) as [|bb'] eqn:bin2un. *)
+(*   SCase "(bin_to_un bb) is zero". *)
+(*   simpl. *)
+(*   apply bin_zero in bin2un. *)
+(*   rewrite bin2un. *)
+(*   reflexivity. *)
+(*   SCase "(bin_to_un bb) is nonzero". *)
+(*   simpl. *)
+(*   reflexivity. *)
+(*   Case "b is some one bb". *)
+(*   simpl. *)
+(*   assert (H : bin_to_un (incbin bb) > 0). *)
+(*     induction bb as [|a|a]. *)
+(*     compute. reflexivity. *)
+(*     simpl. compute. *)
 
 
-  Print incbin.
-  assert (Lem1 : incbin (one bb) = zero (incbin bb)).
-   simpl. reflexivity.
-  rewrite Lem1.
-  Print normalize.
-  assert (Lem2 : normalize (one bb) = one (normalize bb)).
-   simpl. reflexivity.
-  rewrite Lem2.
+(*   Print incbin. *)
+(*   assert (Lem1 : incbin (one bb) = zero (incbin bb)). *)
+(*    simpl. reflexivity. *)
+(*   rewrite Lem1. *)
+(*   Print normalize. *)
+(*   assert (Lem2 : normalize (one bb) = one (normalize bb)). *)
+(*    simpl. reflexivity. *)
+(*   rewrite Lem2. *)
   
 
 
 
 
-Theorem double_bin : forall (n : nat),
-                       un_to_bin (n + n) = normalize (zero (un_to_bin n)).
-  intros m.
-  induction m as [|mm].
-  SSCase "n is zero".
-  simpl.
-  reflexivity.
-  SSCase "n is some S mm".
-  rewrite <- plus_n_Sm.
-  rewrite plus_comm.
-  rewrite <- plus_n_Sm.
-  (* trying to avoid unfolding normalize *)
-  assert (left_side : un_to_bin (S (S (mm+mm))) = incbin (incbin (un_to_bin (mm+mm)))).
-   simpl. reflexivity.
-  rewrite left_side.
-  assert (right_side : un_to_bin (S mm) = incbin (un_to_bin mm)).
-   simpl. reflexivity.
-  rewrite right_side.
-  rewrite zero_incbin_comm.
+(* Theorem double_bin : forall (n : nat), *)
+(*                        un_to_bin (n + n) = normalize (zero (un_to_bin n)). *)
+(*   intros m. *)
+(*   induction m as [|mm]. *)
+(*   SSCase "n is zero". *)
+(*   simpl. *)
+(*   reflexivity. *)
+(*   SSCase "n is some S mm". *)
+(*   rewrite <- plus_n_Sm. *)
+(*   rewrite plus_comm. *)
+(*   rewrite <- plus_n_Sm. *)
+(*   (* trying to avoid unfolding normalize *) *)
+(*   assert (left_side : un_to_bin (S (S (mm+mm))) = incbin (incbin (un_to_bin (mm+mm)))). *)
+(*    simpl. reflexivity. *)
+(*   rewrite left_side. *)
+(*   assert (right_side : un_to_bin (S mm) = incbin (un_to_bin mm)). *)
+(*    simpl. reflexivity. *)
+(*   rewrite right_side. *)
+(*   rewrite zero_incbin_comm. *)
   
 
 
 
 
 
-Theorem normalized : forall (b : bin),
-                       un_to_bin (bin_to_un b) = (normalize b).
-Proof. 
-  intros b.
-  induction b as [|bb|bb].
-  Case "b is inf".
-  simpl.
-  reflexivity.
-  Case "b is some zero bb".
-  simpl.
-  destruct (bin_to_un bb) as [|n].
-  SCase "(bin_to_un bb) is 0".
-  simpl.
-  reflexivity.
-  SCase "(bin_to_un bb) is some S n".
-  rewrite plus_0_r.
-  rewrite <- IHbb.
-  simpl.
-  rewrite <- plus_n_Sm.
-  simpl.
+(* Theorem normalized : forall (b : bin), *)
+(*                        un_to_bin (bin_to_un b) = (normalize b). *)
+(* Proof.  *)
+(*   intros b. *)
+(*   induction b as [|bb|bb]. *)
+(*   Case "b is inf". *)
+(*   simpl. *)
+(*   reflexivity. *)
+(*   Case "b is some zero bb". *)
+(*   simpl. *)
+(*   destruct (bin_to_un bb) as [|n]. *)
+(*   SCase "(bin_to_un bb) is 0". *)
+(*   simpl. *)
+(*   reflexivity. *)
+(*   SCase "(bin_to_un bb) is some S n". *)
+(*   rewrite plus_0_r. *)
+(*   rewrite <- IHbb. *)
+(*   simpl. *)
+(*   rewrite <- plus_n_Sm. *)
+(*   simpl. *)
 
 
 
