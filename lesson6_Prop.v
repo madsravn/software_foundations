@@ -513,7 +513,7 @@ Proof.
   reflexivity.
 Qed.
 
-Theorem pal_helper : forall l x,
+Theorem pal_add_one : forall l x,
                        pal l -> pal (x :: (snoc l x)).
 Proof.
   intros l x H.
@@ -540,6 +540,34 @@ Proof.
   apply even_list with (l:=x::ll).
 Qed.
 
+Theorem pal_remove_one : forall (X : Type) (l : list X),
+                           l = rev l -> l = match l with
+                                              | [] => []
+                                              | h::t => match (rev t) with
+                                                          | [] => [h]
+                                                          | _::m => h::(snoc (rev m) h)
+                                                        end
+                                            end.
+Proof.
+  intros X l H.
+  destruct l as [|h t].
+  Case "l is empty".
+  reflexivity.
+  Case "l is some h::t".
+  destruct (rev t) as [|h' t'] eqn:revt.
+  SCase "t is empty".
+  simpl in H.
+  rewrite revt in H.
+  simpl in H.
+  apply H.
+  SCase "t is some h'::t'".
+  inversion H.
+  rewrite revt in H1.
+  simpl in H1.
+Admitted.
+
+
+
 Theorem palindrome_converse : forall l,
                                 l = rev l -> pal l.
 Proof.
@@ -548,8 +576,7 @@ Proof.
   Case "l is the empty list".
   apply empty.
   Case "l is some h::t".
-  
-  
+Admitted.
   
 
 (**************************************************
@@ -575,12 +602,19 @@ Prove that for any lists l1, l2, and l3, if l1 is a subsequence of l2, then l1 i
 (**************************************************
 Exercise: 2 stars, optional (R_provability)
 Suppose we give Coq the following definition:
-    Inductive R : nat → list nat → Prop :=
-      | c1 : R 0 []
-      | c2 : ∀n l, R n l → R (S n) (n :: l)
-      | c3 : ∀n l, R (S n) l → R n l.
-Which of the following propositions are provable?
-R 2 [1,0]
-R 1 [1,2,1,0]
-R 6 [3,2,1,0]
 **************************************************)
+
+Inductive R : nat -> list nat -> Prop :=
+| c1 : R 0 []
+| c2 : forall n l, R n l -> R (S n) (n :: l)
+| c3 : forall n l, R (S n) l -> R n l.
+
+(**
+  Which of the following propositions are provable?
+  R 2 [1,0]
+   c2 : R 2 [1,0] -> R (S 2) 2::[1,0]
+        c2 : R 3 [2,1,0]
+   c3 : R (S 1) [1,0] -> R 1 [1,0]
+  R 1 [1,2,1,0]
+  R 6 [3,2,1,0]
+**)
