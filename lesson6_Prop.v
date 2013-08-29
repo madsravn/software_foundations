@@ -406,103 +406,92 @@ Prove that
   ∀l, pal l → l = rev l.
 **************************************************)
 
-
 Inductive pal : list Type -> Prop :=
-  empty : pal []
-| odd_list : forall x l,  pal (l ++ (x :: (rev l)))
-| even_list : forall l,  pal (l++(rev l)).
+  even_seed : pal []
+| odd_seed : forall x, pal [x]
+| tack_one : forall x l, pal l -> pal (x::(snoc l x)).
 
 Theorem pal_app_rev : forall l,
-                         pal (l++(rev l)).
+                        pal (l++(rev l)).
 Proof.
-  intros l.
-  apply even_list.
-Qed.
-
-Theorem app_nil : forall X (l : list X),
-                    l ++ [] = l.
-Proof.
-  intros X l.
-  induction l as [|h t].
-  simpl. reflexivity.
-  simpl. rewrite IHt. reflexivity.
-Qed.
-
-Theorem snoc_append : forall X (l:list X) n,
-                        snoc l n = l ++ [n].
-Proof.
- intros X l n. induction l as [| nn ll]. reflexivity. 
- simpl. rewrite <- IHll. reflexivity. 
+  intros l. induction l as [|h t].
+  simpl. apply even_seed.
+  simpl. rewrite <- snoc_with_append.
+  apply tack_one.
+  apply IHt.
 Qed. 
 
-Theorem app_right : forall X (l1 l2 l3 : list X),
-                      l1 ++ (l2 ++ l3) = (l1 ++ l2) ++ l3.
-Proof.
-  intros X m1 m2 m3. induction m1 as [|h1 t1]. 
-  reflexivity. 
-  simpl. rewrite -> IHt1. reflexivity.
-Qed.
-
-Theorem distr_rev : forall X (l1 l2 : list X),
-                      rev (l1 ++ l2) = (rev l2) ++ (rev l1).
-Proof. 
-  intros X l1 l2.
-  induction l1 as [| h1 t1].
-  Case "l1 is nil".
-  simpl. 
-  rewrite -> app_nil. 
-  reflexivity. 
-  Case "l1 is some h::t".
-  simpl. 
-  rewrite -> snoc_append. 
-  rewrite -> IHt1. 
-  rewrite -> snoc_append. 
-  rewrite -> app_right.
-  reflexivity. 
-Qed.
-
-Theorem pal_is_rev : forall l,
+Theorem pal_to_rev : forall l,
                        pal l -> l = rev l.
-Proof.
+Proof. 
   intros l H.
-  inversion H as [ E|x lst E|lst E].
-  Case "the palandrome is empty".
-  simpl.
-  reflexivity.
-  Case "the palandrome has an odd number of elts".
-  destruct lst as [|h t].
-  SCase "l is empty".
-  simpl.
-  reflexivity.
-  SCase "l is some h::t".
-  simpl.
-  rewrite distr_rev.
-  simpl.
-  rewrite rev_snoc.
-  rewrite rev_involutive.
-  rewrite snoc_with_append.
-  SearchAbout snoc.
-  assert (Lem1 : forall ll, snoc (h::t) x ++ ll = (h::t)++[x]++ll).
-    intros ll.
-    rewrite snoc_append.
-    rewrite app_right.
-    reflexivity.
-  rewrite Lem1.
-  simpl.
-  reflexivity.
-  Case "the palandrome has an even number of elts".
-  rewrite distr_rev.
-  rewrite rev_involutive.
+  induction H as [|x|x ll].
+  Case "l is empty".
+  simpl. reflexivity.
+  Case "l has a single element".
+  simpl. reflexivity.
+  Case "l is some arbitrary length palindrome".
+  simpl. rewrite rev_snoc. 
+  simpl. rewrite IHpal. 
+  rewrite rev_involutive. 
+  rewrite <- IHpal.
   reflexivity.
 Qed.
 
 
 
 (**************************************************
-Exercise: 5 stars, optional (palindrome_converse)
-Using your definition of pal from the previous exercise, prove that
+  Exercise: 5 stars, optional (palindrome_converse)
+  Using your definition of pal from the previous exercise, prove that
      ∀l, l = rev l → pal l.
 **************************************************)
+
+Definition tail {X : Type} (l : list X) :=
+  match l with 
+    |[] => []
+    |h::t => t
+  end.
+
+Eval simpl in (tail [1;2;3]).
+
+Theorem tail_inv : forall (X : Type) l (x : X),
+                     rev l = tail (rev (snoc l x)).
+Proof.
+  intros X l x. induction l as [|h t].
+  simpl. reflexivity.
+  simpl. rewrite IHt.
+  rewrite rev_snoc.
+  assert (H : forall l, tail (x::l) = l).
+   intro l. simpl. reflexivity.
+  rewrite H. simpl. reflexivity.
+Qed.  
+
+Eval simpl in (rev (tail (rev (tail [1;2;3;2;1])))).
+
+Theorem palindrome_converse : forall l,
+                                l = rev l -> pal l.
+Proof.
+  intros l H. induction l as [|h t].
+  apply even_seed.
+  rewrite H. simpl.
+  rewrite tail_inv with (x:=h).
+  rewrite rev_snoc. 
+  assert (tail_rev : forall X (h : X) t,  tail (h :: rev t) = rev (tail (h::t))).
+   intros X h0 t0. simpl. reflexivity.
+  rewrite tail_rev.
+  rewrite <- rev_involutive.
+  rewrite rev_snoc. 
+
+  inversion H.
+  induction l as [|h t].
+  Case "l is empty".
+  apply even_seed.
+  Case "l is not empty".
+  simpl in H. rewrite H.
+  
+  apply pal_to_rev in IHt.
+  
+  apply tack_one in IHt.
 
 Theorem snoc_rev : forall X (h : X) t,
                     snoc t h = rev (h::rev t).

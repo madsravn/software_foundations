@@ -463,18 +463,12 @@ end.
 Theorem rev_injective : forall (l1 l2 : natlist),
                           rev l1 = rev l2 -> l1 = l2.
 Proof.
-  intros l1. 
-  (* would like to do this inductively over the length of the lists
-     or over both lists simultaneously.
-     if i could do this over the lenth of the lists, i would show that the last 
-     elements of rev l1 and rev l2 being equal implies that the first elements of
-     l1 an l2 are equal. then for the inductive hypothesis i would show that for
-     any i less than the length-1, we have the inductive hypothesis that
-     (rev l1)[i]=(rev l2)[i] -> l1[length-i-1] = l2[length-i-1]. Then I would show 
-     that from this we can conclude that 
-     (rev l1)[i+1]=(rev l2)[i+1] -> l1[length-i] = l2[length-i]
-*)
-Admitted.
+  intros l1 l2 H.
+  rewrite <- rev_involutive.
+  rewrite <- H.
+  rewrite rev_involutive.
+  reflexivity.
+Qed.
 
 
 
