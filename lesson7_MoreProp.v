@@ -80,43 +80,101 @@ Proof.
   apply IHaa.
 Qed.
 
+Theorem plus_comm : forall m n,
+                      m + n = n + m.
+Proof. 
+  intros m n. induction n as [|nn]. 
+  simpl. rewrite plus_n_O. reflexivity.
+  rewrite <- plus_n_Sm. rewrite IHnn. rewrite <- plus_Sn_m. reflexivity.
+Qed.
+
 Theorem plus_lt : forall n1 n2 m,
                     n1 + n2 < m ->
                     n1 < m /\ n2 < m.
 Proof.
+  unfold lt. 
+  split.  
+  generalize H.
+  apply le_trans.
+  rewrite <- plus_Sn_m. 
+  apply le_plus_l.
+  generalize H.
+  apply le_trans.
+  rewrite plus_n_Sm. 
+  rewrite plus_comm.
+  apply le_plus_l.
+Qed.
+
+Theorem lt_S : forall n m,
+                 n < m ->  n < S m.
+Proof.
   unfold lt.
-  intros n1 n2 m E1.
-  induction E1.
-  
-    
+  intros n m.
+  apply le_S.
+Qed.
 
-Theorem lt_S : ∀n m,
-  n < m →
-  n < S m.
+Fixpoint ble_nat n m : bool :=
+match (n,m) with
+| (O,_) => true
+| (_,O) => false
+| (S n, S m) => ble_nat n m
+end.
+
+Theorem ble_nat_true : forall n m,
+                         ble_nat n m = true -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  generalize dependent n.
+  induction m as [|mm].
+  intros n H. destruct n.
+  apply le_n.
+  inversion H.
+  intros n H. destruct n.
+  apply O_le_n.
+  apply n_le_m__Sn_le_Sm.
+  simpl in H.
+  generalize H.
+  apply IHmm.
+Qed.
 
-Theorem ble_nat_true : ∀n m,
-  ble_nat n m = true → n <= m.
+Theorem le_ble_nat : forall n m,
+                       n <= m -> ble_nat n m = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m.
+  generalize dependent n.
+  induction m as [|mm].
+  intros n H. inversion H.
+  simpl. reflexivity.
+  intros n H.
+  destruct n as [|nn].
+  simpl. reflexivity.
+  simpl. apply Sn_le_Sm__n_le_m in H.
+  generalize H.
+  apply IHmm.
+Qed.
 
-Theorem le_ble_nat : ∀n m,
-  n <= m →
-  ble_nat n m = true.
+Theorem ble_nat_true_trans : forall n m o,
+                               ble_nat n m = true ->
+                               ble_nat m o = true ->
+                               ble_nat n o = true.
 Proof.
-  (* Hint: This may be easiest to prove by induction on m. *)
-  (* FILL IN HERE *) Admitted.
+  intros n m o E1 E2.
+  apply ble_nat_true in E1.
+  apply ble_nat_true in E2.
+  apply le_ble_nat.
+  generalize E2. generalize E1.
+  apply le_trans.
+Qed.
 
-Theorem ble_nat_true_trans : ∀n m o,
-  ble_nat n m = true → ble_nat m o = true → ble_nat n o = true.
-Proof.
-  (* Hint: This theorem can be easily proved without using induction. *)
-  (* FILL IN HERE *) Admitted.
 
-Exercise: 3 stars (R_provability)
+
+(**************************************************
+ Exercise: 3 stars (R_provability)
+**************************************************)
 Module R.
-We can define three-place relations, four-place relations, etc., in just the same way as binary relations. For example, consider the following three-place relation on numbers:
+(**
+  We can define three-place relations, four-place relations, etc., in just the same way as binary relations. For example, consider the following three-place relation on numbers:
+**)
 
 Inductive R : nat → nat → nat → Prop :=
    | c1 : R 0 0 0 
