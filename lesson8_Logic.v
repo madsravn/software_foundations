@@ -1,5 +1,6 @@
 (* Software Foundations Chapter 8 : Logic in Coq *)
 
+
 (**************************************************
  Exercise: 1 star, optional (proj2)
 **************************************************)
@@ -176,9 +177,19 @@ Inductive True : Prop -> Prop :=
  Exercise: 2 stars, advanced (double_neg_inf)
  Write an informal proof of double_neg:
  **************************************************)
+Theorem double_neg_inf : forall P : Prop,
+                           P -> ~~P.
+Proof. 
+  intros P H1.
+  unfold not. intro H2.
+  apply H2 in H1.
+  inversion H1.
+Qed.
 (** 
 Theorem: P implies ~~P, for any proposition P.
-Proof: (* FILL IN HERE *)
+Proof: Let P be some proposition. First consider ~P. This is equivalent to the statement that
+the proposition P implies the proposition False. Now consider ~~P. This states the if ~P holds, then we can 
+derive False. Therefore, the statement we are really trying to prove is P -> (P -> False) -> False. Assume P and P -> False. From these two assumptions we can derive False and use this evidence to complete the proof. 
 **)
 
 
@@ -192,11 +203,14 @@ Theorem contrapositive : forall P Q : Prop,
 Proof.
   intros P Q E1.
   unfold not.
-  intro E2.
-  apply E2 in E1.
-  inversion E1.
-  Admitted.
-  
+  intros E2 E3.
+  apply E1 in E3.
+  apply E2 in E3.
+  apply E3.
+Qed.  
+
+
+
 (**************************************************
  Exercise: 1 star (not_both_true_and_false)
  **************************************************)
@@ -207,7 +221,7 @@ Proof.
   intros H.
   inversion H as [P' P'False].
   apply P'False in P'.
-  inversion P'.
+  apply P'.
 Qed.
 
 
@@ -216,7 +230,9 @@ Qed.
  Exercise: 1 star, advanced (informal_not_PNP)
  Write an informal proof (in English) of the proposition ∀ P : Prop, ~(P ∧ ~P).
 **************************************************)
-(* FILL IN HERE *)
+(** Proof:
+ Let ~(P /\ ~P) be represented instead as P /\ (P -> False) -> False. Assume the premises: P /\ (P -> False). Using the left side of the conjunction (P) as evidence for the right (P -> False), we derive False. Use this derivation as evidence for the goal. 
+**)
 
 
 
@@ -265,7 +281,53 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 Definition implies_to_or := forall P Q : Prop,
                               (P -> Q) -> (~P \/ Q).
 
+Theorem classic_excluded_middle : forall P,
+                                    (~~P -> P) <-> (P \/ ~P).
+Proof. 
+  intros P. split.
+  intros H.
+Admitted.
 
-**************************************************
+
+(**************************************************
+ Exercise: 2 stars (false_beq_nat)
+**************************************************)
+Fixpoint beq_nat n m :=
+  match (n, m) with
+    | (O, O) => true
+    | (O, _) | (_, O) => false
+    | (S nn, S mm) => beq_nat nn mm
+  end.
+
+Theorem ex_falso_quot_liblet : forall P : Prop, 
+                                 False -> P.
+Proof. intros P H. inversion H. Qed.
+
+Theorem false_beq_nat : forall n m : nat,
+                          n <> m ->
+                          beq_nat n m = false.
+Proof.
+  intros n m H.
+  destruct n as [|nn]. destruct m as [|mm].
+  simpl. unfold not in H.
+  assert (Lem1 : 0 = 0). reflexivity.
+  apply H in Lem1.
+  apply ex_falso_quot_liblet.
+  apply Lem1.
+  simpl. unfold not in H.
+
+Exercise: 2 stars, optional (beq_nat_false)
+Theorem beq_nat_false : ∀n m,
+  beq_nat n m = false → n <> m.
+Proof.
+  (* FILL IN HERE *) Admitted.
+☐
+Exercise: 2 stars, optional (ble_nat_false)
+Theorem ble_nat_false : ∀n m,
+  ble_nat n m = false → ~(n <= m).
+Proof.
+  (* FILL IN HERE *) Admitted.
+☐
+
 **************************************************
 **************************************************
