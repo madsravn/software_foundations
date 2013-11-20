@@ -298,11 +298,20 @@ Theorem classic_excluded_middle : forall P,
                                     (~~P -> P) <-> (P \/ ~P).
 Proof. 
   intros P.
+  assert (dn : P -> ~~ P). apply double_neg_inf.
+  assert (p : False -> P). intro F. inversion F.
   split.
-  unfold not.
-  intro H.
-  right. intro H2. apply double_neg_inf in H2. unfold not in H2. 
-  apply H2. intro H3. apply H2. intro H4. 
+  intro H1. unfold not in dn. unfold not in H1.
+  left. apply H1. apply dn.  
+
+
+
+
+
+
+
+
+
 
 
 (**************************************************
