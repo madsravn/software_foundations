@@ -48,7 +48,8 @@ Definition even n : Prop := evenb n = true.
 Theorem even__ev : forall n : nat,
                      (even n -> ev n) /\ (even (S n) -> ev (S n)).
 Proof.
-  intros n. induction n as [|nn].
+  intros n.
+  induction n as [|nn].
   split.
   intro H. apply ev_0.
   intro H. inversion H.
@@ -168,10 +169,15 @@ Qed.
  Exercise: 2 stars, advanced (True)
  Define True as another inductively defined proposition. (The intution is that True should be a proposition for which it is trivial to give evidence.)
  **************************************************)
-Inductive True : Prop -> Prop :=
-| triv : forall P : Prop, True P.
+Inductive True : Prop :=
+| triv : True.
 
-
+(*** Check this constructor ***)
+Theorem check_true : forall A, A -> True.
+Proof.
+  intros A H.
+  apply triv.
+ Qed.
 
 (**************************************************
  Exercise: 2 stars, advanced (double_neg_inf)
@@ -192,7 +198,14 @@ the proposition P implies the proposition False. Now consider ~~P. This states t
 derive False. Therefore, the statement we are really trying to prove is P -> (P -> False) -> False. Assume P and P -> False. From these two assumptions we can derive False and use this evidence to complete the proof. 
 **)
 
-
+(***
+Theorem double_neg_imp : forall P : Prop,
+                           ~~ P -> P.
+Proof. 
+  unfold not.
+  intros P H.
+  (no evidence to say anything else)
+***)
 
 (**************************************************
   Exercise: 2 stars (contrapositive)
@@ -284,9 +297,12 @@ Definition implies_to_or := forall P Q : Prop,
 Theorem classic_excluded_middle : forall P,
                                     (~~P -> P) <-> (P \/ ~P).
 Proof. 
-  intros P. split.
-  intros H.
-Admitted.
+  intros P.
+  split.
+  unfold not.
+  intro H.
+  right. intro H2. apply double_neg_inf in H2. unfold not in H2. 
+  apply H2. intro H3. apply H2. intro H4. 
 
 
 (**************************************************
