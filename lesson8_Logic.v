@@ -1,3 +1,5 @@
+Require Export case.
+Require String.
 (* Software Foundations Chapter 8 : Logic in Coq *)
 
 
@@ -283,6 +285,11 @@ Proof.
 
  For those who like a challenge, here is an exercise taken from the Coq'Art book (p. 123). The following five statements are often considered as characterizations of classical logic (as opposed to constructive logic, which is what is "built in" to Coq). We can't prove them in Coq, but we can consistently add any one of them as an unproven axiom if we wish to work in classical logic. Prove that these five propositions are equivalent.
 **************************************************)
+Theorem ex_falso_quot_liblet : forall P : Prop, 
+                                 False -> P.
+Proof. intros P H. inversion H. Qed.
+
+
 Definition peirce := forall P Q: Prop,
                        ((P -> Q) -> P) -> P.
 Definition classic := forall P:Prop,
@@ -294,15 +301,51 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 Definition implies_to_or := forall P Q : Prop,
                               (P -> Q) -> (~P \/ Q).
 
-Theorem classic_excluded_middle : forall P,
-                                    (~~P -> P) <-> (P \/ ~P).
+Theorem classic_peirce : classic <-> peirce.
 Proof. 
-  intros P.
-  assert (dn : P -> ~~ P). apply double_neg_inf.
-  assert (p : False -> P). intro F. inversion F.
-  split.
-  intro H1. unfold not in dn. unfold not in H1.
-  left. apply H1. apply dn.  
+  split. unfold classic. unfold peirce.
+  intros classic P Q.
+  intro H1. apply classic.
+  unfold not. intro notP. apply notP. apply H1.
+  intro H2. apply classic. unfold not.
+  intro notQ. apply notP in H2.
+  apply H2.
+  unfold classic. unfold peirce.
+  intros peirce P notnotP.
+  unfold not in notnotP.
+  apply peirce with (P:=P) (Q:=False).
+  intro H1.
+  apply ex_falso_quot_liblet.
+  apply notnotP.
+  apply H1.
+Qed.  
+
+Theorem classic_excluded_middle : classic <-> excluded_middle.
+Proof. 
+  split. unfold classic. unfold excluded_middle.
+  intros classic P.
+  left. 
+  apply classic.
+  unfold not.
+  intro H1.
+  apply H1.
+  apply classic.
+  unfold not.
+  intro H2.
+  apply double_neg_inf in H2.
+  unfold not in H2.
+
+
+
+
+Theorem pierce_excluded_middle : peirce <-> excluded_middle.
+Proof. 
+  split. unfold peirce. unfold excluded_middle.
+  intros H P. 
+  left.
+  
+
+
 
 
 
@@ -324,9 +367,6 @@ Fixpoint beq_nat n m :=
     | (S nn, S mm) => beq_nat nn mm
   end.
 
-Theorem ex_falso_quot_liblet : forall P : Prop, 
-                                 False -> P.
-Proof. intros P H. inversion H. Qed.
 
 Theorem false_beq_nat : forall n m : nat,
                           n <> m ->
