@@ -320,41 +320,35 @@ Proof.
   apply H1.
 Qed.  
 
-Theorem classic_excluded_middle : classic <-> excluded_middle.
-Proof. 
-  split. unfold classic. unfold excluded_middle.
-  intros classic P.
-  left. 
-  apply classic.
-  unfold not.
-  intro H1.
-  apply H1.
-  apply classic.
-  unfold not.
-  intro H2.
-  apply double_neg_inf in H2.
-  unfold not in H2.
-
-
-
-
-Theorem pierce_excluded_middle : peirce <-> excluded_middle.
-Proof. 
-  split. unfold peirce. unfold excluded_middle.
-  intros H P. 
-  left.
+(* Theorem imples_to_or_de_morgan_not_and_not : implies_to_or <-> de_morgan_not_and_not. *)
+(* Proof. *)
+(*   split. unfold implies_to_or. unfold de_morgan_not_and_not. *)
+(*   intros implies_to_or P Q H1. *)
   
 
+(* Theorem peirce_excluded_middle : peirce <-> excluded_middle. *)
+(* Proof.  *)
+(*   split. unfold peirce. unfold excluded_middle. *)
+(*   intros peirce P. *)
+(*   left. *)
+(*   apply peirce with (P:=P) (Q:=False). *)
+(*   intro notP. *)
+(*   apply ex_falso_quot_liblet. *)
+(*   generalize notP. *)
+  
+(*   apply peirce with (P:=False) (Q:=P). *)
+(*   intro H. *)
 
 
-
-
-
-
-
-
-
-
+(* Theorem classic_excluded_middle : classic <-> excluded_middle. *)
+(* Proof.  *)
+(*   split. unfold classic. unfold excluded_middle. *)
+(*   intros classic P. *)
+(*   left.  *)
+(*   apply classic. *)
+(*   intro notP. *)
+(*   apply notP. *)
+  
 
 
 (**************************************************
@@ -373,26 +367,59 @@ Theorem false_beq_nat : forall n m : nat,
                           beq_nat n m = false.
 Proof.
   intros n m H.
-  destruct n as [|nn]. destruct m as [|mm].
-  simpl. unfold not in H.
-  assert (Lem1 : 0 = 0). reflexivity.
-  apply H in Lem1.
-  apply ex_falso_quot_liblet.
-  apply Lem1.
-  simpl. unfold not in H.
+  unfold not in H.
+  generalize dependent n.
+  induction m as [|mm].
+  intros n H.
+  destruct n. 
+  simpl. apply ex_falso_quot_liblet. apply H. reflexivity.
+  simpl. reflexivity.
+  intros n. destruct n as [|nn].
+  intros H. simpl. reflexivity.
+  simpl. intro H. apply IHmm. intro E. 
+  apply H. SearchAbout S.
+  apply eq_S. apply E.
+Qed.
 
+
+
+(**************************************************
 Exercise: 2 stars, optional (beq_nat_false)
-Theorem beq_nat_false : ∀n m,
-  beq_nat n m = false → n <> m.
+**************************************************)
+Theorem beq_nat_false :  forall n m,
+                           beq_nat n m = false -> n <> m.
 Proof.
-  (* FILL IN HERE *) Admitted.
-☐
+  intros n.
+  unfold not.
+  induction n as [|nn].
+  destruct m as [|mm].
+  simpl. intro H. inversion H.
+  simpl. intro H1. intro H2. inversion H2.
+  destruct m as [|mm].
+  simpl. intros H1 H2. inversion H2.
+  simpl. intros H1 H2. apply eq_add_S in H2.
+  generalize H2. generalize H1. apply IHnn.
+Qed.
+ 
+
+
+(**************************************************
 Exercise: 2 stars, optional (ble_nat_false)
-Theorem ble_nat_false : ∀n m,
-  ble_nat n m = false → ~(n <= m).
+**************************************************)
+Fixpoint ble_nat (n:nat) (m:nat) := match (n, m) with 
+                                      | (O, _) => true
+                                      | (S _, O) => false
+                                      | (S nn, S mm) => ble_nat nn mm
+                                    end.
+
+Theorem ble_nat_false : forall n m,
+                          ble_nat n m = false -> ~(n <= m).
 Proof.
-  (* FILL IN HERE *) Admitted.
-☐
+  intros n. induction n as [|nn].
+Admitted.
+
+  
+
 
 **************************************************
 **************************************************
