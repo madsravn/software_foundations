@@ -320,10 +320,20 @@ Proof.
   apply H1.
 Qed.  
 
-(* Theorem imples_to_or_de_morgan_not_and_not : implies_to_or <-> de_morgan_not_and_not. *)
-(* Proof. *)
-(*   split. unfold implies_to_or. unfold de_morgan_not_and_not. *)
-(*   intros implies_to_or P Q H1. *)
+Theorem excluded_middle_implies_to_or : implies_to_or <-> excluded_middle
+Proof.
+  split. unfold excluded_middle. unfold implies_to_or.
+  intros ex_mid.
+(*  apply or_introl with (A:=Q->R) (B:=(Q->R) -> False) in H1. *)
+  
+  
+  
+
+
+Theorem imples_to_or_de_morgan_not_and_not : implies_to_or <-> de_morgan_not_and_not.
+Proof.
+  split. unfold implies_to_or. unfold de_morgan_not_and_not.
+  intros implies_to_or P Q H1.
   
 
 (* Theorem peirce_excluded_middle : peirce <-> excluded_middle. *)
