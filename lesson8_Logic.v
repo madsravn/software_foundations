@@ -320,12 +320,12 @@ Proof.
   apply H1.
 Qed.  
 
-Theorem excluded_middle_implies_to_or : implies_to_or <-> excluded_middle
+Theorem excluded_middle_implies_to_or : implies_to_or <-> excluded_middle.
 Proof.
   split. unfold excluded_middle. unfold implies_to_or.
   intros ex_mid.
 (*  apply or_introl with (A:=Q->R) (B:=(Q->R) -> False) in H1. *)
-  
+Admitted.  
   
   
 
@@ -334,7 +334,7 @@ Theorem imples_to_or_de_morgan_not_and_not : implies_to_or <-> de_morgan_not_and
 Proof.
   split. unfold implies_to_or. unfold de_morgan_not_and_not.
   intros implies_to_or P Q H1.
-  
+Admitted.  
 
 (* Theorem peirce_excluded_middle : peirce <-> excluded_middle. *)
 (* Proof.  *)
@@ -426,10 +426,93 @@ Theorem ble_nat_false : forall n m,
                           ble_nat n m = false -> ~(n <= m).
 Proof.
   intros n. induction n as [|nn].
-Admitted.
+  intros m H E.
+  destruct m as [|mm].
+  simpl in H. inversion H.
+  simpl in H. inversion H.
+  intros m E. destruct m as [|mm].
+  unfold not. intro EE. inversion EE.
+  simpl in E. unfold not. intro EE.
+  simpl in EE. apply Le.le_S_n in EE.
+  generalize dependent EE.
+  generalize dependent E.
+  apply IHnn.
+Qed.
 
+
+
+(**************************************************
+Exercise: 1 star (dist_not_exists)
+Prove that "P holds for all x" implies "there is no x for which P does not hold."
+**************************************************)
+Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
+                            (forall x, P x) -> ~ (exists x, ~ P x).
+Proof.
+  intros X P H1 H2.
+  inversion H2.
+  unfold not in H.
+  apply H.
+  apply H1.
+Qed.
+
+
+
+(**************************************************
+Exercise: 3 stars, optional (not_exists_dist)
+(The other direction of this theorem requires the classical "law of the excluded middle".)
+**************************************************)
+Theorem not_exists_dist : excluded_middle ->
+                          forall (X:Type) (P : X -> Prop),
+                            ~ (exists x, ~ P x) -> (forall x, P x).
+Proof.
+  intros ex_mid X P. 
+  unfold excluded_middle in ex_mid. unfold not.
+  intros H1 x0.
+  Admitted.
+  
   
 
+(**************************************************
+Exercise: 2 stars (dist_exists_or)
+Prove that existential quantification distributes over disjunction.
+**************************************************)
+Theorem dist_exists_or : forall (X:Type) 
+                                (P Q : X -> Prop),
+                           (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
+Proof.
+  intros X P Q.
+  split.
+  intros H1. inversion H1.
+  inversion H as [HL|HR].
+  left. exists x. apply HL.
+  right. exists x. apply HR.
+  intros H. inversion H as [HL|HR].
+  inversion HL.
+  exists x.
+  left. apply H0.
+  inversion HR.
+  exists x.
+  right.
+  apply H0.
+Qed.
 
+
+
+
+(**************************************************
+Exercise: 2 stars (leibniz_equality)
+The inductive definitions of equality corresponds to Leibniz equality: what we mean when we say "x and y are equal" is that every property on P that is true of x is also true of y.
+**************************************************)
+Lemma leibniz_equality : forall (X : Type) (x y: X), 
+                           x = y -> forall P : X -> Prop, P x -> P y.
+Proof.
+  intros X x y H P E.
+  rewrite -> H in E.
+  apply E.
+Qed.
+
+
+
+**************************************************
 **************************************************
 **************************************************
