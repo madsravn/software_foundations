@@ -513,6 +513,217 @@ Qed.
 
 
 
-**************************************************
-**************************************************
-**************************************************
+(**************************************************
+Exercise: 1 star (override_shadow')
+**************************************************)
+Theorem eq_nat_dec : forall n m : nat, {n = m} + {n <> m}.
+Proof.
+  intros n.
+  induction n as [|nn].
+  destruct m as [|mm].
+  left. reflexivity.
+  right. intros H. inversion H.
+  intros m. destruct m as [|mm].
+  right. intros H. inversion H.
+  destruct IHnn with (m:=mm) as [eq|neq].
+  left. apply f_equal. apply eq.
+  right. intros H. inversion H. generalize H1. apply neq.
+Qed.
+
+Definition override' {X: Type} (f: nat -> X) (k:nat) (x:X) : nat -> X:=
+  fun (k':nat) => if eq_nat_dec k k' then x else f k'.
+
+Theorem override_shadow' : forall (X:Type) x1 x2 k1 k2 (f : nat -> X),
+                             (override' (override' f k1 x2) k1 x1) k2 = (override' f k1 x1) k2.
+Proof.
+  intros X x1 x2 k1 k2 f.
+  unfold override'. destruct (eq_nat_dec k1 k2) as [E1|E2].
+  reflexivity. reflexivity.
+Qed.
+
+
+
+(**************************************************
+Exercise: 1 star, optional (dist_and_or_eq_implies_and)
+**************************************************)
+Lemma dist_and_or_eq_implies_and : forall P Q R,
+                                     P /\ (Q \/ R) /\ Q = R -> P\/ Q.
+Proof.
+  intros P Q R H.
+  inversion H.
+  left. apply H0.
+Qed.
+
+
+(**************************************************
+Exercise: 3 stars (all_forallb)
+Inductively define a property all of lists, parameterized by a type X and a property P : X → Prop, such that all X P l asserts that P is true for every element of the list l.
+**************************************************)
+
+Definition empty {X:Type} (l:list X) : Prop :=
+  match l with
+    | nil => True
+    | _ => False
+  end.
+
+Definition tail {X:Type} (l:list X) : list X :=
+  match l with
+    | nil => nil
+    | cons _ tl => tl
+  end.
+
+Definition head {X:Type} (l:list X) (default:X) :  X :=
+  match l with
+    | nil => default
+    | cons hd _ => hd
+  end.
+
+(* Inductive all (X : Type) (P : X -> Prop) : list X -> Prop := *)
+(* | all_elts : *)
+(*     forall l : list X, *)
+(*       match l with *)
+(*         | nil => all X P nil -> True *)
+(*         | cons hd tl => P hd /\ all X P tl *)
+(*       end. *)
+    
+(*   | b : forall l : list X, (empty l) -> all X P nil *)
+(*   | a : forall l, P (hd l ) -> all X P (tail l). *)
+
+
+(** Recall the function forallb, from the exercise forall_exists_challenge in chapter Poly: **)
+
+Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
+  match l with
+    | nil => true
+    | cons x l' => andb (test x) (forallb test l')
+  end.
+
+(* Using the property all, write down a specification for forallb, and prove that it satisfies the specification. Try to make your specification as precise as possible.
+Are there any important properties of the function forallb which are not captured by your specification? *)
+
+(* FILL IN HERE *)
+
+(**************************************************
+Exercise: 4 stars, advanced (filter_challenge)
+One of the main purposes of Coq is to prove that programs match their specifications. To this end, let's prove that our definition of filter matches a specification. Here is the specification, written out informally in English.
+Suppose we have a set X, a function test: X→bool, and a list l of type list X. Suppose further that l is an "in-order merge" of two lists, l1 and l2, such that every item in l1 satisfies test and no item in l2 satisfies test. Then filter test l = l1.
+A list l is an "in-order merge" of l1 and l2 if it contains all the same elements as l1 and l2, in the same order as l1 and l2, but possibly interleaved. For example,
+    [1,4,6,2,3]
+is an in-order merge of
+    [1,6,2]
+and
+    [4,3].
+Your job is to translate this specification into a Coq theorem and prove it. (Hint: You'll need to begin by defining what it means for one list to be a merge of two others. Do this with an inductive relation, not a Fixpoint.)
+**************************************************)
+
+
+(**************************************************
+Exercise: 5 stars, advanced, optional (filter_challenge_2)
+A different way to formally characterize the behavior of filter goes like this: Among all subsequences of l with the property that test evaluates to true on all their members, filter test l is the longest. Express this claim formally and prove it.
+**************************************************)
+
+
+(**************************************************
+Exercise: 4 stars, advanced (no_repeats)
+The following inductively defined proposition...
+**************************************************)
+Inductive appears_in {X:Type} (a:X) : list X -> Prop :=
+  | ai_here : forall l, appears_in a (a::l)
+  | ai_later : forall b l, appears_in a l -> appears_in a (b::l).
+
+(* ...gives us a precise way of saying that a value a appears at least once as a member of a list l.
+Here's a pair of warm-ups about appears_in. *)
+
+Lemma appears_in_app : forall (X:Type) (xs ys : list X) (x:X), 
+     appears_in x (xs ++ ys) -> appears_in x xs ∨ appears_in x ys.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+Lemma app_appears_in : forall (X:Type) (xs ys : list X) (x:X), 
+     appears_in x xs ∨ appears_in x ys -> appears_in x (xs ++ ys).
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(* Now use appears_in to define a proposition disjoint X l1 l2, which should be provable exactly when l1 and l2 are lists (with elements of type X) that have no elements in common. *)
+
+(* FILL IN HERE *)
+
+(* Next, use appears_in to define an inductive proposition no_repeats X l, which should be provable exactly when l is a list (with elements of type X) where every member is different from every other. For example, no_repeats nat [1,2,3,4] and no_repeats bool [] should be provable, while no_repeats nat [1,2,1] and no_repeats bool [true,true] should not be. *)
+
+(* FILL IN HERE *)
+
+(* Finally, state and prove one or more interesting theorems relating disjoint, no_repeats and ++ (list append). *)
+
+(* FILL IN HERE *)
+
+(**************************************************
+Exercise: 3 stars (nostutter)
+Formulating inductive definitions of predicates is an important skill you'll need in this course. Try to solve this exercise without any help at all (except from your study group partner, if you have one).
+We say that a list of numbers "stutters" if it repeats the same number consecutively. The predicate "nostutter mylist" means that mylist does not stutter. Formulate an inductive definition for nostutter. (This is different from the no_repeats predicate in the exercise above; the sequence 1,4,1 repeats but does not stutter.)
+**************************************************)
+Inductive nostutter: list nat -> Prop :=
+ (* FILL IN HERE *)
+.
+
+(* Make sure each of these tests succeeds, but you are free to change the proof if the given one doesn't work for you. Your definition might be different from mine and still correct, in which case the examples might need a different proof.
+The suggested proofs for the examples (in comments) use a number of tactics we haven't talked about, to try to make them robust with respect to different possible ways of defining nostutter. You should be able to just uncomment and use them as-is, but if you prefer you can also prove each example with more basic tactics. *)
+
+Example test_nostutter_1: nostutter [3;1;4;1;5;6].
+(* FILL IN HERE *) Admitted.
+(* 
+  Proof. repeat constructor; apply beq_nat_false; auto. Qed.
+*)
+
+Example test_nostutter_2: nostutter [].
+(* FILL IN HERE *) Admitted.
+(* 
+  Proof. repeat constructor; apply beq_nat_false; auto. Qed.
+*)
+
+Example test_nostutter_3: nostutter [5].
+(* FILL IN HERE *) Admitted.
+(* 
+  Proof. repeat constructor; apply beq_nat_false; auto. Qed.
+*)
+
+Example test_nostutter_4: not (nostutter [3;1;1;4]).
+(* FILL IN HERE *) Admitted.
+(* 
+  Proof. intro.
+  repeat match goal with 
+    h: nostutter _ |- _ => inversion h; clear h; subst 
+  end.
+  contradiction H1; auto. Qed.
+*)
+
+(**************************************************
+Exercise: 4 stars, advanced (pigeonhole principle)
+The "pigeonhole principle" states a basic fact about counting: if you distribute more than n items into n pigeonholes, some pigeonhole must contain at least two items. As is often the case, this apparently trivial fact about numbers requires non-trivial machinery to prove, but we now have enough...
+First a pair of useful lemmas (we already proved these for lists of naturals, but not for arbitrary lists).
+**************************************************)
+Lemma app_length : ∀(X:Type) (l1 l2 : list X),
+  length (l1 ++ l2) = length l1 + length l2.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+Lemma appears_in_app_split : ∀(X:Type) (x:X) (l:list X),
+  appears_in x l → 
+  ∃l1, ∃l2, l = l1 ++ (x::l2).
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(* Now define a predicate repeats (analogous to no_repeats in the exercise above), such that repeats X l asserts that l contains at least one repeated element (of type X). *)
+
+Inductive repeats {X:Type} : list X → Prop :=
+  (* FILL IN HERE *)
+.
+
+(* Now here's a way to formalize the pigeonhole principle. List l2 represents a list of pigeonhole labels, and list l1 represents an assignment of items to labels: if there are more items than labels, at least two items must have the same label. You will almost certainly need to use the excluded_middle hypothesis. *)
+
+Theorem pigeonhole_principle: ∀(X:Type) (l1 l2:list X),
+  excluded_middle → 
+  (∀x, appears_in x l1 → appears_in x l2) → 
+  length l2 < length l1 → 
+  repeats l1.
+Proof. intros X l1. induction l1.
+  (* FILL IN HERE *) Admitted.
