@@ -2,8 +2,8 @@
 Add LoadPath "./sf".
 (* Add LoadPath "./bin". *)
 Require Export MoreCoq.
-Require Export lesson3_Lists.
 Require Export Lists.
+Require Import lesson3_Lists.
 
 
 
@@ -410,12 +410,29 @@ Prove that
 Inductive pal_1 {X : Type} : list X -> Prop :=
 | even_seed : pal_1 []
 | odd_seed : forall x, pal_1 [x]
-| tack_one : forall x l, pal_1 l -> pal_1 (x::(snoc l x)). 
+| tack_one : forall x l, pal_1 l -> pal_1 (rev l) -> pal_1 (x::(snoc l x)).
 
 Inductive pal_2 {X:Type} : list X -> Prop :=
 | empty : pal_2 []
 | one : forall x, pal_2 [x]
 | more : forall x l, pal_2 (l ++ (rev l)) -> pal_2 (x::(snoc (l ++ (rev l)) x)).
+
+Theorem app_nil_end : forall X (l : list X),
+                        l ++ [] = l.
+Proof. 
+  intros X l. induction l as [|h t].
+  simpl. reflexivity.
+  simpl. rewrite IHt. reflexivity.
+Qed.
+
+Theorem distr_rev : forall X (l1 l2 : list X),
+                      rev (l1 ++ l2) = (rev l2) ++ (rev l1).
+Proof. 
+  intros X l1 l2.
+  induction l1 as [| h1 t1].
+  simpl. rewrite app_nil_end. reflexivity.
+  simpl. rewrite IHt1. rewrite snoc_with_append. reflexivity.
+Qed.
 
 Theorem pal_app_rev_1 : forall X (l:list X) ,
                         pal_1 (l++(rev l)).
@@ -425,6 +442,7 @@ Proof.
   simpl. rewrite <- snoc_with_append.
   apply tack_one.
   apply IHt.
+  rewrite distr_rev. rewrite rev_involutive. apply IHt.
 Qed. 
 
 Theorem pal_app_rev_2 : forall X (l : list X),
@@ -447,9 +465,7 @@ Proof.
   simpl. reflexivity.
   Case "l is some arbitrary length palindrome".
   simpl. rewrite rev_snoc. 
-  simpl. rewrite IHpal_1. 
-  rewrite rev_involutive. 
-  rewrite <- IHpal_1.
+  simpl. rewrite <- IHpal_1_1. 
   reflexivity.
 Qed.
 
@@ -496,7 +512,7 @@ Proof.
   simpl. rewrite IHt. reflexivity.
 Qed.
 
-Theorem app_ass : forall X (l1 l2 l3 : list X),
+Theorem app_ass_3 : forall X (l1 l2 l3 : list X),
                     (l1 ++ l2) ++ l3 = l1 ++ l2 ++ l3.
 Proof. 
   intros X l1 l2 l3.
@@ -505,11 +521,37 @@ Proof.
   simpl. rewrite IHt. reflexivity.
 Qed.
 
-Definition tail X (l : list X) :=
+Definition tail {X : Type} (l : list X) :=
   match l with
     | [] => []
     | _::t => t
   end.
+
+Definition head {X : Type} (l : list X) :=
+  match l with 
+    | [] => None
+    | h::_ => Some h
+  end.
+
+Theorem rev_first_last_head : forall X (l : list X),
+                           l = rev l -> head l = head (rev l).
+Proof.
+  intros X l H. induction l as [|h t].
+  simpl. reflexivity.
+  simpl. simpl in H. rewrite <- H. simpl. reflexivity.
+Qed.
+
+Theorem rev_first_last_tail : forall X (l : list X),
+                                l = rev l -> tail (rev (tail l)) = tail (rev (tail (rev l))).
+Proof. 
+  intros X l H. rewrite <- H. reflexivity.
+Qed.
+
+Theorem rev_first_last_equal : forall X (x: X) (l : list X),
+                                 x::l = rev(x::l) -> Some x = head (rev (x::l)).
+Proof. 
+  intros X x l H. rewrite <- H. simpl. reflexivity.
+Qed.
 
 Theorem palindrome_converse_1 : forall X (l : list X),
                                 l = rev l -> pal_1 l.
@@ -518,10 +560,11 @@ Proof.
   Case "l is empty".
   intros H. apply even_seed.
   Case "l is not empty".
-  SCase "Show that the premises must be false".
-  intros H. apply IHt in H.
+  intros H. rewrite H. simpl.
+  induction t as [|hh tt].
+  simpl. apply odd_seed.
   
-
+  
 
 Theorem palindrome_converse : forall l,
                                 l = rev l -> pal_1 l.
