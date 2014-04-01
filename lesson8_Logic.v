@@ -289,7 +289,6 @@ Theorem ex_falso_quot_liblet : forall P : Prop,
                                  False -> P.
 Proof. intros P H. inversion H. Qed.
 
-
 Definition peirce := forall P Q: Prop,
                        ((P -> Q) -> P) -> P.
 Definition classic := forall P:Prop,
@@ -320,12 +319,24 @@ Proof.
   apply H1.
 Qed.  
 
+Theorem peirce_de_morgan_not_and_not : peirce <-> de_morgan_not_and_not.
+Proof.
+  split. unfold peirce. unfold de_morgan_not_and_not.
+  intros peirce P Q H1. 
+  unfold not in H1.
+  apply peirce with (Q:=False). intros H2. 
+  left. apply peirce with (Q:=False). intros H3.
+  apply ex_falso_quot_liblet.
+  apply H2. right. apply peirce with (Q:=False). intros H4.
+  apply ex_falso_quot_liblet. 
+  
+
 Theorem excluded_middle_implies_to_or : implies_to_or <-> excluded_middle.
 Proof.
   split. unfold excluded_middle. unfold implies_to_or.
   intros ex_mid.
 (*  apply or_introl with (A:=Q->R) (B:=(Q->R) -> False) in H1. *)
-Admitted.  
+Admitted.
   
   
 
@@ -466,8 +477,9 @@ Theorem not_exists_dist : excluded_middle ->
                             ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
   intros ex_mid X P. 
-  unfold excluded_middle in ex_mid. unfold not.
-  intros H1 x0.
+  unfold excluded_middle in ex_mid.
+  intros H x. unfold not in H.
+  
   Admitted.
   
   
@@ -560,35 +572,13 @@ Exercise: 3 stars (all_forallb)
 Inductively define a property all of lists, parameterized by a type X and a property P : X → Prop, such that all X P l asserts that P is true for every element of the list l.
 **************************************************)
 
-Definition empty {X:Type} (l:list X) : Prop :=
-  match l with
-    | nil => True
-    | _ => False
-  end.
+Notation "x :: l" := (cons x l) (at level 60, right associativity).
+Notation "[ ]" := nil.
+Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 
-Definition tail {X:Type} (l:list X) : list X :=
-  match l with
-    | nil => nil
-    | cons _ tl => tl
-  end.
-
-Definition head {X:Type} (l:list X) (default:X) :  X :=
-  match l with
-    | nil => default
-    | cons hd _ => hd
-  end.
-
-(* Inductive all (X : Type) (P : X -> Prop) : list X -> Prop := *)
-(* | all_elts : *)
-(*     forall l : list X, *)
-(*       match l with *)
-(*         | nil => all X P nil -> True *)
-(*         | cons hd tl => P hd /\ all X P tl *)
-(*       end. *)
-    
-(*   | b : forall l : list X, (empty l) -> all X P nil *)
-(*   | a : forall l, P (hd l ) -> all X P (tail l). *)
-
+Inductive all (X : Type) (P : X -> Prop) : list X -> Prop :=
+| empty : all X P []
+| rest_true : forall x l, P x -> all X P l -> all X P (x::l).
 
 (** Recall the function forallb, from the exercise forall_exists_challenge in chapter Poly: **)
 
